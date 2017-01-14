@@ -1,6 +1,7 @@
 import sys
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from genetic_algorithm import Container
+import sqlite3
 
 
 
@@ -13,7 +14,15 @@ ga = Container()
 @app.route('/')
 def index():
     return render_template('index.html')
-    #return render_template('single_model.html')
+
+@app.route('/single_model', methods=['GET', 'POST'])
+def single():
+    if request.method == 'POST':
+        shader = request.form['shader']
+        print(shader)
+        return render_template("single_model.html", shader=shader)
+    else:
+        return render_template("single_model.html")
 
 #--------------------------------------#
 @app.route('/_start')
@@ -45,6 +54,22 @@ def send_js(path):
 @app.route('/data/<path:path>')
 def send_data(path):
     return send_from_directory('data', path)
+
+#--------------------------------------#
+@app.route('/recordEquation')
+def recordEquation():
+
+    equation = request.args.get('equation')
+    print(equation)
+
+    with sqlite3.connect("database.db") as con:
+        cur = con.cursor()
+        cur.execute("INSERT INTO equations (equation) values (?)", [equation])
+
+    con.commit()
+    con.close()
+
+    return equation
 
 #--------------------------------------#
 def shutdown_server():
