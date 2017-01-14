@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js">
+        </script>
+
+		<title>Fireball Evolver</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+
+			body {
+				color: #000;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+			}
+
+			a {
+
+				color: #0080ff;
+			}
+
+                        .selected {
+                            background:#90EE90;
+                        }
+
+                        .unselected {
+                            background:clear;
+                        }
+
+
+		</style>
+
+
+<script src="/js/dat.gui.js"></script>
+<script src="/js/three.min.js"></script>
+<script src="/js/stats.min.js"></script>
+<script src="/js/ga_lib.js"></script>
+<script src="/js/FlyControls.js"></script>
+<script src="/js/TrackballControls.js"></script>
+
+</head>
+
+<body>
+<div id="buttons"></div>
+
+<div id="container"></div>
+
+
+<script type="x-shader/x-vertex" id="vertexShaderHeader">
+    uniform float time;
+    varying vec3 vNormal;
+
+    void main() {
+        vNormal = normal;
+
+        vec3 newPos = vec3(position);
+</script>
+
+<script type="x-shader/x-vertex" id="vertexShaderFooter">
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0); 
+    }
+</script>
+
+<script type="x-shader/x-vertex" id="vertexShader">
+/*
+
+glsl functions
+max, min, mod, fract, ceil, floor, sign, abs, inversesqrt, sqrt,
+log2, exp2, log, exp, pow, atan, acos, asin, tan, cos, sin,
+degrees, radians
+
+vectors: distance, dot, cross, length, normalize
+
+*/
+    // vertex shader code
+    uniform float time;
+    varying vec3 vNormal;
+
+    void main() {
+        vNormal = normal;
+        vec3 newPos = vec3(position);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
+    }
+
+
+</script>
+
+<script type="x-shader/x-vertex" id="fragmentShader">
+    // fragment shader code
+
+    varying vec3 vNormal;
+
+    void main() {
+        // set texture to color
+        //gl_FragColor = vec4(1.0, 0.5, 1.0, 1.0);
+
+        vec3 light = vec3(0.5, 0.2, 1.0);
+        light = normalize(light);
+        float dProd = max(0.0, dot(vNormal, light));
+
+        gl_FragColor = vec4(dProd, dProd, dProd, 1.0);
+
+    }
+
+</script>
+
+
+<script>
+
+//-----------------------
+// GA code
+//-----------------------
+var params = {
+    generations: 100,
+    length: 7*5,
+    size: 100,
+    xoRate: 0.7,
+    mutRate: 0.05,
+    fitness: function(individual) {
+        individual.score = individual.chromosome.reduce(function(a, b) { return a + b; }, 0);
+    }
+};
+
+//-----------------------
+
+var container, stats;
+
+var scene, renderer;
+var start = Date.now(), fov = 30;
+
+var objects = [];
+var mats = [];
+
+var mouse = new THREE.Vector2();
+var selectedBox;
+var selectedIndex = -1;
+var prevSel = -1;
+
+var CAMERAMOVE = 4.0;
+var windowWidth, windowHeight;
+var views = [];
+var ROWS = 3;
+var COLS = 3;
+var SIZE = ROWS * COLS;
+
+var flyingCameras = [];
+
+var clock = new THREE.Clock();
+
+var generation = 1;
+
+var shaders = [];
+
+// for GUI
+var controls = new function() {
+        this.status = 'Press start';
+        //this.displayOutline = false;
+        this.xo = 0.7;
+        this.mut = 0.01;
+        this.start = function() {
+            startEvolution();
+        }
+	// next
+        this.submit = function() {
+            next();
+        }
+	// this needs to be implemented
+        //this.save = function() {
+        //}
+    };
+var gui = new dat.GUI();
+
+function defineViewports() 
+{
+    // create JSON objects with all parameters for the viewports
+    var rowStep = 1.0 / ROWS;
+    var colStep = 1.0 / COLS;
+    var spacing = 500;
+    var cameraDist = 20;
+
+    var index = 0;
+
+    for (var i = 0; i < ROWS; i++)
+    {
+        for (var j = 0; j < COLS; j++) 
+        {
+            var viewport = {
+                left: colStep * j,
+                bottom: rowStep * i,
+                width: colStep,
+                height: rowStep,
+                background: new THREE.Color().setRGB( 0, 0, 0),
+                eye: [j * spacing, i * spacing, cameraDist ],
+                up: [ 0, 1, 0 ],
+                fov: 75,
+                };
+
+            views.push(viewport);
+
+            var bPos = Math.floor(rowStep * i * 100 + rowStep * 100 * 0.5);
+            var lPos = Math.floor(colStep * j * 100);
+            var b = "<button id=\"button_" + index + "\" type=\"button\" style=\"position:absolute;";
+            b += "bottom:" + bPos + "%; left:" + lPos + "%;\">Select</button>";
+            document.getElementById("buttons").innerHTML += b;
+            index++;
+
+        }
+    }
+}
+
+function initCameras() 
+{
+    // one camera for each viewport 
+
+    var view;
+    for (var i =  0; i < views.length; ++i ) 
+    {
+        view = views[i];
+        camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
+        camera.position.x = view.eye[ 0 ];
+        camera.position.y = view.eye[ 1 ]+10;
+        camera.position.z = view.eye[ 2 ];
+        camera.up.x = view.up[ 0 ];
+        camera.up.y = view.up[ 1 ];
+        camera.up.z = view.up[ 2 ];
+        camera.lookAt(new THREE.Vector3(view.eye[0], view.eye[1]+20, 0));
+        // save camera in current view
+        view.camera = camera;
+
+        //var controls = new THREE.FlyControls(camera);
+        //controls.movementSpeed = 25;
+        //controls.domElement = container;
+        //controls.rollSpeed = Math.PI / 24;
+        //controls.autoForward = false;
+        //controls.dragToLook = true;
+
+        //var flyControls = new THREE.FirstPersonControls(camera);
+        //flyControls.movementSpeed = 25;
+        //flyControls.rollSpeed = Math.PI / 24;
+        //flyControls.autoForward = true;
+        //flyControls.dragToLook = false;
+
+        //flyingCameras.push(controls);
+
+        var cam_i = new THREE.TrackballControls(camera, renderer.domElement);
+        cam_i.target = new THREE.Vector3(view.eye[0], view.eye[1]+20, 0);
+        flyingCameras.push(cam_i);
+
+    }
+
+
+}
+
+
+init();
+animate();
+
+
+function init() 
+{
+
+    container = document.getElementById( 'container' );
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    container.appendChild( renderer.domElement );
+
+    scene = new THREE.Scene();
+
+    defineViewports();
+    initCameras();
+
+    // load models
+    var modelName = "/data/male_model_object.json";
+    //var modelName = "/data/blockman-inc.json";
+    for (var i = 0; i < views.length; ++i)
+    {
+	var objectLoader = new THREE.ObjectLoader();
+	objectLoader.load(modelName, onLoad);
+    }
+
+    // define materials for each object
+    for (var i = 0; i < views.length; ++i)
+    {
+        // shader material
+        var m = new THREE.ShaderMaterial({
+            uniforms: {
+                time: {type: "f", value: 0.0},
+            },
+            vertexShader: document.getElementById('vertexShader').textContent,
+            fragmentShader: document.getElementById('fragmentShader').textContent
+        });
+
+        mats.push(m);
+
+    }
+
+    stats = new Stats();
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.top = '0px';
+    container.appendChild( stats.domElement );
+
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    document.addEventListener('keypress', onDocumentKeyPress, false);
+    //document.addEventListener('click', onClick, false);
+    document.getElementById('buttons').addEventListener('click', onClick, false);
+
+    // lighting
+    var ambient = new THREE.AmbientLight( 0x444444 );
+    scene.add( ambient );
+
+    var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+    directionalLight.position.set( 1, 1, 1 ).normalize();
+    scene.add( directionalLight );
+    
+    var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+    directionalLight.position.set( -1, -1, -1 ).normalize();
+    scene.add( directionalLight );
+
+    // init GUI
+    gui.add(controls, 'status');
+    gui.add(controls, 'xo', 0.3, 1.0).step(.05);
+    gui.add(controls, 'mut', 0.0, 0.20).step(.05);
+    gui.add(controls, 'start');
+    gui.add(controls, 'submit');
+    // needs to be implemented
+    //gui.add(controls, 'save');
+
+}
+
+function onLoad(obj)
+{
+    var index = objects.length;
+
+    objects.push(obj);
+    obj.position.set(views[index].eye[0], views[index].eye[1], 0);
+    obj.scale.x = 1;
+    obj.scale.y = 1;
+    obj.scale.z = 1;
+    obj.name = 'child'+index;
+
+    obj.traverse( function ( child )
+    {
+        if ( child instanceof THREE.Mesh ) {
+            child.material = mats[index];
+        }
+    });
+
+    scene.add(obj);
+}
+
+function onClick(event) 
+{
+    if (selectedIndex == -2) {
+            return;
+    }
+
+    if (selectedIndex > -1) {
+        scene.remove(selectedBox);
+        document.getElementById("button_" + selectedIndex).className = "unselected";
+    }
+
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+
+    var curCol = Math.floor(event.clientX / (window.innerWidth / COLS));
+    var curRow = Math.floor(event.clientY / (window.innerHeight / ROWS));
+
+    curRow = ROWS - curRow - 1;
+    selectedIndex = (curRow * COLS) + curCol;
+    //console.debug("onclick: index - " + selectedIndex);
+    //console.debug("onclick: object " + objects[selectedIndex]);
+    selectedBox = new THREE.BoxHelper(objects[selectedIndex]);
+    scene.add(selectedBox);
+
+    document.getElementById("button_" + selectedIndex).className = "selected";
+
+    console.log(shaders[selectedIndex]);
+
+}
+
+function next()
+{
+    if (selectedIndex >= 0){
+	prevSel = selectedIndex;
+	selectedIndex = -2;
+
+	updateStatus('Processing...');
+	
+	$.getJSON('/_step', {
+		sel: selectedIndex,
+	    }, 
+	function(data) {
+	    applyShaders(data);
+	    incGeneration();
+	    clearSelection();
+	});
+    }
+}
+
+
+function onDocumentKeyPress( event ) 
+{
+    var deltaX = 0, deltaY = 0, deltaZ = 0;
+    var move = CAMERAMOVE;
+    var change = 1;
+
+    switch(event.keyCode) 
+    {
+        // enter
+        case 13:
+	    next();
+            break;
+        //u
+        case 117:
+            CAMERAMOVE *= 2.0;
+            break;
+        // y
+        case 121:
+            CAMERAMOVE /= 2.0;
+            break;
+        // h
+        case 72+32:
+            deltaX = -move;
+            break;
+        // l
+        case 76+32:
+            deltaX = move;
+            break;
+        // j
+        case 74+32:
+            deltaY = move;
+            break;
+        // k
+        case 75+32:
+            deltaY = -move;
+            break;
+        case 87+32:
+        // w
+            deltaZ = move;
+            break;
+        case 83+32:
+        // s
+            deltaZ = -move;
+            break;
+        // n
+        case 110:
+            change = 0;
+            startEvolution();
+            break;
+
+    }
+
+/*
+    if (change == 1) 
+    {
+        var delta = [deltaX, deltaY, deltaZ];
+        for ( var i = 0; i < views.length; ++i ) 
+        {
+            updateCamera(views[i].camera, scene, delta );
+        }
+    }
+    */
+}
+
+function clearSelection()
+{
+    document.getElementById("button_" + prevSel).className = "unselected";
+    selectedIndex = -1;
+    scene.remove(selectedBox);
+    selectedBox = null;
+}
+
+function incGeneration()
+{
+    updateStatus("Generation: " + generation);
+    generation++;
+}
+
+function updateStatus(newStatus) {
+    controls.status = newStatus;
+    for (var i in gui.__controllers) {
+        gui.__controllers[i].updateDisplay();
+    }
+}
+
+function startEvolution()
+{
+    console.debug("evolution started");
+    incGeneration();
+
+    $.getJSON('/_start', {
+            size: SIZE,
+        }, 
+    function(data) {
+        applyShaders(data); 
+    });
+}
+
+function updateCamera( camera, scene, delta ) {
+alert('hi');
+    camera.position.x += delta[0];
+    camera.position.y += delta[1];
+    camera.position.z += delta[2];
+}
+
+function onDocumentMouseMove( event ) 
+{
+    mouse.x = ( event.clientX - windowWidth / 2 );
+    mouse.y = ( event.clientY - windowHeight / 2 );
+}
+
+function applyShaders(data)
+{
+
+    var header = document.getElementById('vertexShaderHeader').textContent;
+    var footer = document.getElementById('vertexShaderFooter').textContent;
+
+    var result = data.result;
+    shaders = [];
+    for (var i = 0; i < objects.length; i++)
+    {
+        var vexProg = result[i].replace(/x/g, 'newPos.x');
+        vexProg = vexProg.replace(/y/g, 'newPos.y');
+        vexProg = vexProg.replace(/z/g, 'newPos.z');
+
+        console.debug(vexProg);
+        vexProg = header + 'newPos.xyz += ' + vexProg + ';\n' + footer;
+        //console.debug(vexProg);
+
+        shaders.push(vexProg);
+        scene.remove(objects[i]);
+        var m = new THREE.ShaderMaterial({
+            uniforms: {
+                time: {type: "f", value: 0.0}, 
+                },
+            vertexShader: vexProg,
+            fragmentShader: document.getElementById('fragmentShader').textContent
+        });
+
+        mats[i] = m;
+        objects[i].traverse( function ( child ) {
+            if ( child instanceof THREE.Mesh ) {
+                child.material = mats[i];
+            }
+        });
+
+        scene.add(objects[i]);
+        //console.debug(result[i]);
+    }       
+}
+
+function updateSize() 
+{
+    if ( windowWidth != window.innerWidth || windowHeight != window.innerHeight ) 
+    
+    {
+        windowWidth  = window.innerWidth;
+        windowHeight = window.innerHeight;
+
+        renderer.setSize ( windowWidth, windowHeight );
+    }
+}
+
+function animate() 
+{
+    render();
+    stats.update();
+
+    requestAnimationFrame( animate );
+}
+
+function render() 
+{
+    updateSize();
+
+    var delta = clock.getDelta();
+
+    for ( var i = 0; i < views.length; ++i ) 
+    {
+        var left   = Math.floor( windowWidth  * views[i].left );
+        var bottom = Math.floor( windowHeight * views[i].bottom );
+        var width  = Math.floor( windowWidth  * views[i].width );
+        var height = Math.floor( windowHeight * views[i].height );
+        renderer.setViewport( left, bottom, width, height );
+        renderer.setScissor( left, bottom, width, height );
+        renderer.setScissorTest ( true );
+        renderer.setClearColor( views[i].background );
+
+        views[i].camera.aspect = width / height;
+        views[i].camera.updateProjectionMatrix();
+
+        //mats[i].uniforms['time'].value = .00025 * (Date.now() - start);
+        mats[i].uniforms['time'].value = .00050 * (Date.now() - start);
+
+        //flyingCameras[i].update(delta);
+        flyingCameras[i].update();
+
+        renderer.render( scene, views[i].camera );
+    }
+}
+
+</script>
+
+</body>
+</html>
