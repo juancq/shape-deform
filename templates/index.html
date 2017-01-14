@@ -53,11 +53,23 @@
 
 </head>
 
-<body>
+<body> 
+<!--top buttons-->
+<div style="background-color: black; padding: 3px 0px">
+<input type="button" onclick="location.href='/single_model'" value="Single Model View">
+<input type="button" onclick="sendShader()" value="Single Model with Selected Shader">
+<!-- <input type="button" onclick="location.href='/test'" value="See all Saved Equations"> -->
+</div>
+
+<!--invisible form to send selected shader to single_model-->
+<form style="display: none" action="/single_model" method="POST">
+<input type="text" id="shader" name="shader">
+<input type="submit" value="submit">
+</form>
+
 <div id="buttons"></div>
 
 <div id="container"></div>
-
 
 <script type="x-shader/x-vertex" id="vertexShaderHeader">
     uniform float time;
@@ -121,25 +133,12 @@ vectors: distance, dot, cross, length, normalize
 <script>
 
 //-----------------------
-// GA code
-//-----------------------
-var params = {
-    generations: 100,
-    length: 7*5,
-    size: 100,
-    xoRate: 0.7,
-    mutRate: 0.05,
-    fitness: function(individual) {
-        individual.score = individual.chromosome.reduce(function(a, b) { return a + b; }, 0);
-    }
-};
-
-//-----------------------
 
 var container, stats;
 
 var scene, renderer;
-var start = Date.now(), fov = 30;
+var start = Date.now();
+var fov = 30;
 
 var objects = [];
 var mats = [];
@@ -155,6 +154,7 @@ var views = [];
 var ROWS = 3;
 var COLS = 3;
 var SIZE = ROWS * COLS;
+var xoRate = 0.7, mutRate = 0.01;
 
 var flyingCameras = [];
 
@@ -163,13 +163,14 @@ var clock = new THREE.Clock();
 var generation = 1;
 
 var shaders = [];
+var vexProgArray = [];
 
 // for GUI
 var controls = new function() {
         this.status = 'Press start';
         //this.displayOutline = false;
-        this.xo = 0.7;
-        this.mut = 0.01;
+        this.xo = xoRate;
+        this.mut = mutRate;
         this.start = function() {
             startEvolution();
         }
@@ -177,11 +178,35 @@ var controls = new function() {
         this.submit = function() {
             next();
         }
-	// this needs to be implemented
-        //this.save = function() {
-        //}
+		
+	this.save = function() {
+	    sendToDatabase();
+	}
+		
     };
 var gui = new dat.GUI();
+
+function sendShader(){
+	<!-- send shader to server-->
+	document.getElementById("shader").value = vexProgArray[selectedIndex];
+	document.forms[0].submit();
+}
+
+function sendToDatabase(){
+	<!-- send equation to server-->
+	
+	if(selectedIndex >= 0 && selectedIndex <= 8){
+		$.getJSON('/recordEquation', 
+		{ equation : vexProgArray[selectedIndex] });
+	
+		alert("Saved!");
+		
+	} else {
+		
+		alert("Selection not made.");
+		}
+	
+}
 
 function defineViewports() 
 {
@@ -335,8 +360,7 @@ function init()
     gui.add(controls, 'mut', 0.0, 0.20).step(.05);
     gui.add(controls, 'start');
     gui.add(controls, 'submit');
-    // needs to be implemented
-    //gui.add(controls, 'save');
+    gui.add(controls, 'save');
 
 }
 
@@ -532,14 +556,14 @@ function applyShaders(data)
     shaders = [];
     for (var i = 0; i < objects.length; i++)
     {
+        vexProgArray.push(result[i]);
+
         var vexProg = result[i].replace(/x/g, 'newPos.x');
         vexProg = vexProg.replace(/y/g, 'newPos.y');
         vexProg = vexProg.replace(/z/g, 'newPos.z');
 
         console.debug(vexProg);
         vexProg = header + 'newPos.xyz += ' + vexProg + ';\n' + footer;
-        //console.debug(vexProg);
-
         shaders.push(vexProg);
         scene.remove(objects[i]);
         var m = new THREE.ShaderMaterial({
