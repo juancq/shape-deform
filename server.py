@@ -1,7 +1,8 @@
 import sys
+import random
+import sqlite3
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from genetic_algorithm import Container
-import sqlite3
 
 
 
@@ -32,7 +33,7 @@ def start():
 
     # start ga
     ga.on_start(popsize = 100, subset_size = size)
-    
+
     subset = ga.get_subset()
     return jsonify(result=subset)
 
@@ -70,6 +71,21 @@ def recordEquation():
     con.close()
 
     return equation
+
+@app.route('/sendRandomEquation')
+def returnRandomEQ():
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM equations")
+
+    equations = []
+
+    for row in c.fetchall():
+        equations.append(row[1])
+
+    equation = equations[random.randrange(0, len(equations))]
+
+    return jsonify(result=equation)
 
 #--------------------------------------#
 def shutdown_server():
