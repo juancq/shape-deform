@@ -56,10 +56,10 @@
 
 <div style="background-color: black; padding: 3px 0px">
 <input type="button" onclick="location.href='/'" value="Multi Model View">
+<input type="button" onclick="getRandomEquation()" value="Get Random Equation">
 </div>
 
 <div id="container"></div>
-
 
 <script type="x-shader/x-vertex" id="vertexShaderHeader">
     uniform float time;
@@ -72,7 +72,7 @@
 </script>
 
 <script type="x-shader/x-vertex" id="vertexShaderFooter">
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0); 
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
     }
 </script>
 
@@ -84,7 +84,7 @@
     void main() {
         vNormal = normal;
         vec3 newPos = vec3(position);
-		
+
         gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
     }
 
@@ -130,17 +130,18 @@ var clock = new THREE.Clock();
 
 // init GUI
 var controls = new function() {
-        //this.status = '';
-        //this.displayOutline = false;
 
-        this.save = function() {
-	 // to be implemented
-        }
-        this.equation = '{{shader}}';
-    };
+  this.equation = '{{shader}}';
+  //this.status = '';
+  //this.displayOutline = false;
+
+  this.save = function() {
+    // to be implemented
+  }
+};
 
 var gui = new dat.GUI();
-//gui.add(controls, 'status');
+// gui.add(controls, 'status');
 gui.add(controls, 'save');
 var eqController = gui.add(controls, 'equation');
 eqController.onFinishChange(function(value) {
@@ -148,7 +149,9 @@ eqController.onFinishChange(function(value) {
     textboxShader(value);
 });
 
-function defineViewports() 
+
+
+function defineViewports()
 {
     // create JSON objects with all parameters for the viewports
     var cameraDist = 10;
@@ -166,10 +169,9 @@ function defineViewports()
 
     view = viewport;
 }
-
-function initCameras() 
+function initCameras()
 {
-    // one camera for each viewport 
+    // one camera for each viewport
 
     var camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
     camera.position.x = 0;
@@ -194,7 +196,7 @@ function initCameras()
 init();
 animate();
 
-function init() 
+function init()
 {
 
     container = document.getElementById( 'container' );
@@ -259,14 +261,14 @@ function textboxShader(data)
     var vexProg = result.replace(/x/g, 'newPos.x');
     vexProg = vexProg.replace(/y/g, 'newPos.y');
     vexProg = vexProg.replace(/z/g, 'newPos.z');
-	
+
     console.debug(vexProg);
     vexProg = header + 'newPos.xyz += ' + vexProg + ';\n' + footer;
 
     scene.remove(model);
     material = new THREE.ShaderMaterial({
         uniforms: {
-            time: {type: "f", value: 0.0}, 
+            time: {type: "f", value: 0.0},
         },
         vertexShader: vexProg,
         fragmentShader: document.getElementById('fragmentShader').textContent
@@ -282,10 +284,10 @@ function textboxShader(data)
 }
 
 
-function updateSize() 
+function updateSize()
 {
-    if ( windowWidth != window.innerWidth || windowHeight != window.innerHeight ) 
-    
+    if ( windowWidth != window.innerWidth || windowHeight != window.innerHeight )
+
     {
         windowWidth  = window.innerWidth;
         windowHeight = window.innerHeight;
@@ -294,7 +296,7 @@ function updateSize()
     }
 }
 
-function animate() 
+function animate()
 {
     render();
     stats.update();
@@ -303,7 +305,7 @@ function animate()
     requestAnimationFrame( animate );
 }
 
-function render() 
+function render()
 {
     updateSize();
 
@@ -331,8 +333,18 @@ var t = '{{shader}}';
 textboxShader(t);
 {%endif %}
 
-</script>
-	
 
+// Get Random Equation
+function getRandomEquation() {
+  $.getJSON('/sendRandomEquation', function(data) {
+
+    textboxShader(data.result);
+
+    controls.equation = data.result;
+    eqController.updateDisplay();
+  });
+}
+
+</script>
 </body>
 </html>
