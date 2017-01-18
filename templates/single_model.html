@@ -61,16 +61,6 @@
 
 <div id="container"></div>
 
-<script>
-function getRandomEquation() {
-  $.getJSON('/sendRandomEquation', function(data) {
-    var equation = data.result;
-    alert(data.result);
-  });
-}
-
-</script>
-
 <script type="x-shader/x-vertex" id="vertexShaderHeader">
     uniform float time;
     varying vec3 vNormal;
@@ -140,23 +130,26 @@ var clock = new THREE.Clock();
 
 // init GUI
 var controls = new function() {
-        //this.status = '';
-        //this.displayOutline = false;
 
-        this.save = function() {
-	 // to be implemented
-        }
-        this.equation = '{{shader}}';
-    };
+  this.equation = '{{shader}}';
+  //this.status = '';
+  //this.displayOutline = false;
+
+  this.save = function() {
+    // to be implemented
+  }
+};
 
 var gui = new dat.GUI();
-//gui.add(controls, 'status');
+// gui.add(controls, 'status');
 gui.add(controls, 'save');
 var eqController = gui.add(controls, 'equation');
 eqController.onFinishChange(function(value) {
     // Fires when controller loses focus.
     textboxShader(value);
 });
+
+
 
 function defineViewports()
 {
@@ -176,7 +169,6 @@ function defineViewports()
 
     view = viewport;
 }
-
 function initCameras()
 {
     // one camera for each viewport
@@ -341,8 +333,18 @@ var t = '{{shader}}';
 textboxShader(t);
 {%endif %}
 
+
+// Get Random Equation
+function getRandomEquation() {
+  $.getJSON('/sendRandomEquation', function(data) {
+
+    textboxShader(data.result);
+
+    controls.equation = data.result;
+    eqController.updateDisplay();
+  });
+}
+
 </script>
-
-
 </body>
 </html>
