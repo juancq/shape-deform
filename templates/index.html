@@ -66,6 +66,11 @@
 <input type="text" id="shader" name="shader">
 <input type="submit" value="submit">
 </form>
+	
+<form enctype = "multipart/form-data" action="/uploadMulti" method='POST'> <!--form to upload model-->
+<input type="file" name="file">
+<input type="submit" value="submit">
+</form>
 
 <div id="buttons"></div>
 
@@ -308,8 +313,12 @@ function init()
     initCameras();
 
     // load models
+    {% if filename %}
+    var modelName = '{{filename}}';
+    {% else %}
     var modelName = "/data/male_model_object.json";
-    //var modelName = "/data/blockman-inc.json";
+    {% endif %}
+	
     for (var i = 0; i < views.length; ++i)
     {
 	var objectLoader = new THREE.ObjectLoader();
