@@ -117,10 +117,6 @@ def uploadSingle():
         
         file = request.files['file']
         
-        if file.filename == '':
-            print('No selected file')
-            return redirect(request.url)
-        
         if file and allowed_file(file.filename):
 
             filename = uploadModel(file)
@@ -140,10 +136,6 @@ def uploadMulti():
             return redirect(request.url)
         
         file = request.files['file']
-        
-        if file.filename == '':
-            print('No selected file')
-            return redirect(request.url)
         
         if file and allowed_file(file.filename):
 
