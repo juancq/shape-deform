@@ -59,6 +59,11 @@
 <input type="button" onclick="getRandomEquation()" value="Get Random Equation">
 </div>
 
+<form enctype = "multipart/form-data" action="/uploadSingle" method='POST'> <!--form to upload model-->
+<input type="file" name="file">
+<input type="submit" value="submit">
+</form>
+
 <div id="container"></div>
 
 <script type="x-shader/x-vertex" id="vertexShaderHeader">
@@ -210,8 +215,11 @@ function init()
     initCameras();
 
     // load models
+    {% if filename %}
+    var modelName = '{{filename}}';
+    {% else %}
     var modelName = "/data/male_model_object.json";
-    //var modelName = "/data/blockman-inc.json";
+    {% endif %}
 
     var objectLoader = new THREE.ObjectLoader();
     objectLoader.load(modelName, onObjectLoadSuccess);
