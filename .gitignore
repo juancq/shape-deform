@@ -1,0 +1,7 @@
+#Python stuff
+*.py[cod]
+*$py.class
+
+# Flask stuff:
+instance/
+.webassets-cache
