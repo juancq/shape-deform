@@ -1,9 +1,10 @@
 import sys
 import random
 import sqlite3
-from flask import Flask, render_template, request, jsonify, send_from_directory
+import os
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for
 from genetic_algorithm import Container
-
+from werkzeug.utils import secure_filename
 
 
 #--------------------------------------#
@@ -86,6 +87,64 @@ def returnRandomEQ():
     equation = equations[random.randrange(0, len(equations))]
 
     return jsonify(result=equation)
+
+
+#--------------------------------------#
+def uploadModel(file):
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            
+    if os.path.exists(filepath):
+        os.remove(filepath)
+                
+    file.save(filepath)
+    filename = "/data/" + filename
+    return filename
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/uploadSingle', methods=['GET', 'POST'])
+def uploadSingle():
+    if request.method == 'POST':
+        
+        if 'file' not in request.files:
+            print('No file part')
+            return redirect(request.url)
+        
+        file = request.files['file']
+        
+        if file and allowed_file(file.filename):
+
+            filename = uploadModel(file)
+            
+            return render_template("single_model.html", filename=filename)
+        
+    return render_template("single_model.html")
+
+            
+@app.route('/uploadMulti', methods=['GET', 'POST'])
+def uploadMulti():
+    
+    if request.method == 'POST':
+        
+        if 'file' not in request.files:
+            print('No file part')
+            return redirect(request.url)
+        
+        file = request.files['file']
+        
+        if file and allowed_file(file.filename):
+
+            filename = uploadModel(file)
+            
+            return render_template("index.html", filename=filename)
+        
+    return render_template("index.html")
+
 
 #--------------------------------------#
 def shutdown_server():
