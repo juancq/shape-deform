@@ -11,6 +11,10 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__, static_url_path='')
 ga = Container()
 
+UPLOAD_FOLDER = 'data'
+ALLOWED_EXTENSIONS = set(['json'])
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 #--------------------------------------#
 @app.route('/')
@@ -93,9 +97,6 @@ def returnRandomEQ():
 def uploadModel(file):
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            
-    if os.path.exists(filepath):
-        os.remove(filepath)
                 
     file.save(filepath)
     filename = "/data/" + filename
