@@ -49,10 +49,16 @@ def single():
 
 @app.route('/view_single', methods=["POST"])
 def viewSingle():
-
-    shader = request.form['shader']
-    print(shader)
-    return render_template("single_model.html", shader=shader)
+    
+    if request.method == "POST":
+        
+        shader = request.form['shader']
+        print(shader)
+        return render_template("single_model.html", shader=shader)
+    
+    else:
+        
+        return render_template("single_model.html")
 
 #--------------------------------------#
 @app.route('/_start')
