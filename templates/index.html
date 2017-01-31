@@ -58,11 +58,22 @@
 <div style="background-color: black; padding: 3px 0px">
 <input type="button" onclick="location.href='/single_model'" value="Single Model View">
 <input type="button" onclick="sendShader()" value="Single Model with Selected Shader">
-<!-- <input type="button" onclick="location.href='/test'" value="See all Saved Equations"> -->
+
+{% if selectModel %}
+<form action="/" method="POST">
+<select name = "selection">
+	{% for row in selectModel %}
+	<option value='{{row["modelName"]}}'>{{row["modelName"]}}</option>
+	{% endfor %}
+	<input type="submit" value="submit">
+</select>
+</form>
+{% endif %}
+	
 </div>
 
 <!--invisible form to send selected shader to single_model-->
-<form style="display: none" action="/single_model" method="POST">
+<form style="display: none" action="/view_single" method="POST">
 <input type="text" id="shader" name="shader">
 <input type="submit" value="submit">
 </form>
@@ -194,7 +205,7 @@ var gui = new dat.GUI();
 function sendShader(){
 	<!-- send shader to server-->
 	document.getElementById("shader").value = vexProgArray[selectedIndex];
-	document.forms[0].submit();
+	document.forms[1].submit();
 }
 
 function sendToDatabase(){
