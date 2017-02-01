@@ -30,7 +30,8 @@ if(not os.path.exists('database.db')):
     conn = sqlite3.connect('database.db')
     print "Database created successfully"
 
-    conn.execute("CREATE TABLE IF NOT EXISTS equations(id INTEGER PRIMARY KEY AUTOINCREMENT, equations TEXT)")
+    conn.execute("CREATE TABLE IF NOT EXISTS equations(id INTEGER PRIMARY KEY AUTOINCREMENT, equation TEXT)")
+    conn.execute("CREATE TABLE IF NOT EXISTS models(id INTEGER PRIMARY KEY AUTOINCREMENT, modelName TEXT)")
     print "Table created successfully"
     conn.close()
 else:
