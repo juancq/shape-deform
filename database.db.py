@@ -15,7 +15,6 @@ def dataEntry(equation):
 
     for col in c.fetchall():
         ID.append(col[0])
-        print col[1]
 
     c.execute("INSERT INTO equations (ID, equation) VALUES (?, ?)", (len(ID)+1, equation))
 
@@ -24,15 +23,16 @@ def dataEntry(equation):
     c.close()
     conn.close()
 
-dataEntry('randomEQ')
+# dataEntry('Enter Equation Here')
 
 if(not os.path.exists('database.db')):
     conn = sqlite3.connect('database.db')
     print "Database created successfully"
 
     conn.execute("CREATE TABLE IF NOT EXISTS equations(id INTEGER PRIMARY KEY AUTOINCREMENT, equation TEXT)")
+
     conn.execute("CREATE TABLE IF NOT EXISTS models(id INTEGER PRIMARY KEY AUTOINCREMENT, modelName TEXT)")
-    print "Table created successfully"
+    print "Tables created successfully"
     conn.close()
 else:
-    print "Both database and table already exists"
+    print "Both database and the tables already exists"
