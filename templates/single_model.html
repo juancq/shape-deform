@@ -57,6 +57,18 @@
 <div style="background-color: black; padding: 3px 0px">
 <input type="button" onclick="location.href='/'" value="Multi Model View">
 <input type="button" onclick="getRandomEquation()" value="Get Random Equation">
+	
+{% if selectModel %} <!--allows user to select saved models-->
+<form action="/single_model" method="POST">
+<select name = "selection">
+	{% for row in selectModel %}
+	<option value='{{row["modelName"]}}'>{{row["modelName"]}}</option>
+	{% endfor %}
+	<input type="submit" value="submit">
+</select>
+</form>
+{% endif %}
+	
 </div>
 
 <form enctype = "multipart/form-data" action="/uploadSingle" method='POST'> <!--form to upload model-->

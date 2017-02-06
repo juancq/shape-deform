@@ -11,19 +11,53 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__, static_url_path='')
 ga = Container()
 
+UPLOAD_FOLDER = 'data'
+ALLOWED_EXTENSIONS = set(['json'])
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 #--------------------------------------#
-@app.route('/')
+@app.route('/', methods=["GET", "POST"])
 def index():
-    return render_template('index.html')
+
+    selectModel = getRow("models")
+
+    if request.method == "POST":
+        selection = request.form.get('selection')
+        filename = "/data/" + selection
+
+        return render_template("index.html", selectModel=selectModel, filename=filename)
+
+    else:
+
+        return render_template('index.html', selectModel=selectModel)
 
 @app.route('/single_model', methods=['GET', 'POST'])
 def single():
+
+    selectModel = getRow("models")
+
     if request.method == 'POST':
+        selection = request.form.get('selection')
+        filename = "/data/" + selection
+
+        return render_template("single_model.html", selectModel=selectModel, filename=filename)
+
+    else:
+
+        return render_template("single_model.html", selectModel=selectModel)
+
+@app.route('/view_single', methods=["POST"])
+def viewSingle():
+    
+    if request.method == "POST":
+        
         shader = request.form['shader']
         print(shader)
         return render_template("single_model.html", shader=shader)
+    
     else:
+        
         return render_template("single_model.html")
 
 #--------------------------------------#
@@ -37,7 +71,6 @@ def start():
 
     subset = ga.get_subset()
     return jsonify(result=subset)
-
 
 #--------------------------------------#
 @app.route('/_step')
@@ -62,16 +95,17 @@ def send_data(path):
 def recordEquation():
 
     equation = request.args.get('equation')
-    print(equation)
 
     with sqlite3.connect("database.db") as con:
         cur = con.cursor()
         cur.execute("INSERT INTO equations (equation) values (?)", [equation])
+        print("Equation saved: " + equation)
 
     con.commit()
     con.close()
 
     return equation
+
 
 @app.route('/sendRandomEquation')
 def returnRandomEQ():
@@ -88,23 +122,28 @@ def returnRandomEQ():
 
     return jsonify(result=equation)
 
-
 #--------------------------------------#
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 def uploadModel(file):
+
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            
-    if os.path.exists(filepath):
-        os.remove(filepath)
+
+    with sqlite3.connect("database.db") as con:
+        cur = con.cursor()
+        cur.execute("INSERT INTO MODELS (modelName) VALUES (?)", [filename])
+        print("Model saved: " + filename)
+
+    con.commit()
+    con.close()
                 
     file.save(filepath)
     filename = "/data/" + filename
     return filename
-
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route('/uploadSingle', methods=['GET', 'POST'])
@@ -152,6 +191,19 @@ def shutdown_server():
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
+
+#--------------------------------------#
+def getRow(table):
+
+    con = sqlite3.connect("database.db")
+    con.row_factory = sqlite3.Row
+
+    cur = con.cursor()
+    cur.execute("select * from " + table)
+
+    rows = cur.fetchall();
+
+    return rows
 
 #--------------------------------------#
 def main():
