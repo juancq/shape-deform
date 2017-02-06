@@ -49,15 +49,15 @@ def single():
 
 @app.route('/view_single', methods=["POST"])
 def viewSingle():
-    
+
     if request.method == "POST":
-        
+
         shader = request.form['shader']
         print(shader)
         return render_template("single_model.html", shader=shader)
-    
+
     else:
-        
+
         return render_template("single_model.html")
 
 #--------------------------------------#
@@ -140,7 +140,7 @@ def uploadModel(file):
 
     con.commit()
     con.close()
-                
+
     file.save(filepath)
     filename = "/data/" + filename
     return filename
@@ -149,39 +149,39 @@ def uploadModel(file):
 @app.route('/uploadSingle', methods=['GET', 'POST'])
 def uploadSingle():
     if request.method == 'POST':
-        
+
         if 'file' not in request.files:
             print('No file part')
             return redirect(request.url)
-        
+
         file = request.files['file']
-        
+
         if file and allowed_file(file.filename):
 
             filename = uploadModel(file)
-            
+
             return render_template("single_model.html", filename=filename)
-        
+
     return render_template("single_model.html")
 
-            
+
 @app.route('/uploadMulti', methods=['GET', 'POST'])
 def uploadMulti():
-    
+
     if request.method == 'POST':
-        
+
         if 'file' not in request.files:
             print('No file part')
             return redirect(request.url)
-        
+
         file = request.files['file']
-        
+
         if file and allowed_file(file.filename):
 
             filename = uploadModel(file)
-            
+
             return render_template("index.html", filename=filename)
-        
+
     return render_template("index.html")
 
 

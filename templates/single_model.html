@@ -2,62 +2,57 @@
 <html lang="en">
 <head>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js">
-        </script>
-
 		<title>Single Model Editor</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<style>
 
-			body {
-				color: #000;
-				font-family:Monospace;
-				font-size:13px;
-				text-align:center;
-
-				background-color: #fff;
-				margin: 0px;
-				overflow: hidden;
-			}
-
-			#info {
-				position: absolute;
-				top: 0px; width: 100%;
-				padding: 5px;
-			}
-
-			a {
-
-				color: #0080ff;
-			}
-
-                        .selected {
-                            background:#90EE90;
-                        }
-
-                        .unselected {
-                            background:clear;
-                        }
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/single_model.css') }}">
 
 
-		</style>
-
-
-<script src="/js/dat.gui.js"></script>
-<script src="/js/three.min.js"></script>
-<script src="/js/stats.min.js"></script>
-<script src="/js/ga_lib.js"></script>
-<script src="/js/TrackballControls.js"></script>
+    <script src="/js/dat.gui.js"></script>
+    <script src="/js/three.min.js"></script>
+    <script src="/js/stats.min.js"></script>
+    <script src="/js/ga_lib.js"></script>
+    <script src="/js/TrackballControls.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 
 </head>
 
 <body>
 
+<div class="nav">
+    <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="/single_model">Single Mode View</a></li>
+        <li><a href="/">Multi Mode View</a></li>
+        <li><a href="#">About</a></li>
+    </ul>
+</div>
+
+<div id="sidebar">
+  <ul>
+    <li style="font-size: 150%">Controls</li>
+    <li>
+        Equation:
+        <input id="equationTextField" type="text" style="width:100px;color:#4283f4;">
+        <input type="button" onclick="applyEquation()" value="Apply"/>
+    </li>
+    <li><input type="button" onclick="getRandomEquation()" value="Get Random Equation"></li>
+    <li style="height:50px;">
+			<!--form to upload model-->
+			<form enctype = "multipart/form-data" action="/uploadSingle" method='POST'>
+			<input type="file" name="file" style="padding-bottom: 10px;">
+			<br />
+			<input type="submit" value="submit">
+			</form>
+		</li>
+  </ul>
+
+</div>
+
 <div style="background-color: black; padding: 3px 0px">
-<input type="button" onclick="location.href='/'" value="Multi Model View">
-<input type="button" onclick="getRandomEquation()" value="Get Random Equation">
-	
+
+
 {% if selectModel %} <!--allows user to select saved models-->
 <form action="/single_model" method="POST">
 <select name = "selection">
@@ -68,15 +63,10 @@
 </select>
 </form>
 {% endif %}
-	
+
 </div>
 
-<form enctype = "multipart/form-data" action="/uploadSingle" method='POST'> <!--form to upload model-->
-<input type="file" name="file">
-<input type="submit" value="submit">
-</form>
-
-<div id="container"></div>
+<div id="canvas"></div>
 
 <script type="x-shader/x-vertex" id="vertexShaderHeader">
     uniform float time;
@@ -129,7 +119,6 @@
 
 
 <script>
-//-----------------------
 var container, stats;
 
 var scene, renderer;
@@ -145,6 +134,7 @@ var cameraControl;
 
 var clock = new THREE.Clock();
 
+/*
 // init GUI
 var controls = new function() {
 
@@ -165,8 +155,7 @@ eqController.onFinishChange(function(value) {
     // Fires when controller loses focus.
     textboxShader(value);
 });
-
-
+*/
 
 function defineViewports()
 {
@@ -174,18 +163,19 @@ function defineViewports()
     var cameraDist = 10;
 
     var viewport = {
-	left: 0,
-	bottom: 0,
-	width: 1,
-	height: 1,
-	background: new THREE.Color().setRGB( 0, 0, 0),
-	eye: [0, 0, cameraDist ],
-	up: [ 0, 1, 0 ],
-	fov: 75,
-	};
+			left: 0,
+			bottom: 0,
+			width: 1,
+			height: 1,
+			background: new THREE.Color().setRGB( 0, 0, 0),
+			eye: [0, 0, cameraDist ],
+			up: [ 0, 1, 0 ],
+			fov: 75,
+		};
 
     view = viewport;
 }
+
 function initCameras()
 {
     // one camera for each viewport
@@ -209,16 +199,15 @@ function initCameras()
 
 }
 
-
 init();
 animate();
 
 function init()
 {
 
-    container = document.getElementById( 'container' );
+    container = document.getElementById( 'canvas' );
     renderer = new THREE.WebGLRenderer( { antialias: true } );
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( window.innerWidth, window.innerHeight, false );
     container.appendChild( renderer.domElement );
 
     scene = new THREE.Scene();
@@ -303,7 +292,6 @@ function textboxShader(data)
     scene.add(model);
 }
 
-
 function updateSize()
 {
     if ( windowWidth != window.innerWidth || windowHeight != window.innerHeight )
@@ -360,9 +348,16 @@ function getRandomEquation() {
 
     textboxShader(data.result);
 
-    controls.equation = data.result;
-    eqController.updateDisplay();
+    document.getElementById("equationTextField").value = data.result;
+
+    // controls.equation = data.result;
+    // eqController.updateDisplay();
   });
+}
+
+// Apply equation from the equation text field on the sidebar
+function applyEquation() {
+  textboxShader(document.getElementById("equationTextField").value);
 }
 
 </script>
