@@ -123,6 +123,56 @@ def returnRandomEQ():
     return jsonify(result=equation)
 
 #--------------------------------------#
+@app.route('/checkINT')
+def checkINT():
+
+    data = request.args.get('data', 0)
+    data = str(data)
+    convertedData = ""
+    print(data)
+
+    if data != 0:
+
+        i = 0
+
+        while i <= len(data)-1:
+            try:
+                float(data[i])
+                print("Float passed, accessing convertINT with: " + str(i))
+                convertedINT, i = convertINT(data, i)
+                convertedData = convertedData + convertedINT
+
+
+            except (ValueError, IndexError):
+                convertedData = convertedData + data[i]
+                print(convertedData)
+                i = i + 1
+
+    print(convertedData)
+    return jsonify(convertedData)
+
+def convertINT(data, start):
+
+    i = start
+    while True:
+
+        try:
+            i = i + 1
+            float(data[i])
+            print("Testing index is: " + str(i))
+            print(data[i])
+
+        except (ValueError, IndexError):
+            print("Value Error index is: " + str(i))
+            print(i)
+            end = i
+            print("ConvertINT: " + str(float(data[start:end])))
+            break;
+
+    return [str(float(data[start:end])), end]
+
+
+#--------------------------------------#
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

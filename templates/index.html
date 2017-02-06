@@ -59,16 +59,18 @@
 <input type="button" onclick="location.href='/single_model'" value="Single Model View">
 <input type="button" onclick="sendShader()" value="Single Model with Selected Shader">
 
-{% if selectModel %}
 <form action="/" method="POST">
 <select name = "selection">
+	{% if selectModel %}
 	{% for row in selectModel %}
 	<option value='{{row["modelName"]}}'>{{row["modelName"]}}</option>
 	{% endfor %}
+	{% endif %}
+	<option value="none">No Models Found</option>
 	<input type="submit" value="submit">
 </select>
 </form>
-{% endif %}
+
 	
 </div>
 

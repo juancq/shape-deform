@@ -163,7 +163,7 @@ gui.add(controls, 'save');
 var eqController = gui.add(controls, 'equation');
 eqController.onFinishChange(function(value) {
     // Fires when controller loses focus.
-    textboxShader(value);
+    checkINT(value);
 });
 
 
@@ -272,8 +272,22 @@ function onObjectLoadSuccess(obj)
     scene.add(model);
 }
 
+function checkINT(data){
+
+	var data = data;
+	
+	$.getJSON('/checkINT',
+	{ data: data },
+	function(data) {
+		alert("hI!");
+		textboxShader(data);
+	});
+	
+}
+
 function textboxShader(data)
 {
+	
 
     var header = document.getElementById('vertexShaderHeader').textContent;
     var footer = document.getElementById('vertexShaderFooter').textContent;
