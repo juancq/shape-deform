@@ -37,7 +37,7 @@ def start():
     size = request.args.get('size', 0, type=int)
 
     # start ga
-    ga.on_start(popsize = 100, subset_size = size)
+    ga.on_start(popsize = 50, subset_size = size)
 
     subset = ga.get_subset()
     return jsonify(result=subset)
