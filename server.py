@@ -125,10 +125,11 @@ def returnRandomEQ():
 #--------------------------------------#
 @app.route('/checkINT')
 def checkINT():
-#check for integers, convert into float if true
 
-    data = str(request.args.get('data', 0))
+    data = request.args.get('data', 0)
+    data = str(data)
     convertedData = ""
+    print(data)
 
     if data != 0:
 
@@ -137,31 +138,35 @@ def checkINT():
         while i <= len(data)-1:
             try:
                 float(data[i])
+                print("Float passed, accessing convertINT with: " + str(i))
                 convertedINT, i = convertINT(data, i)
-                convertedData += convertedINT
+                convertedData = convertedData + convertedINT
 
 
-            except ValueError:
-                convertedData += data[i]
-                i += 1
+            except (ValueError, IndexError):
+                convertedData = convertedData + data[i]
+                print(convertedData)
+                i = i + 1
 
+    print(convertedData)
     return jsonify(convertedData)
 
-
 def convertINT(data, start):
-#checks if int number has more than one digit
 
     i = start
-
     while True:
 
         try:
-            i += 1
-            print(i)
+            i = i + 1
             float(data[i])
+            print("Testing index is: " + str(i))
+            print(data[i])
 
         except (ValueError, IndexError):
+            print("Value Error index is: " + str(i))
+            print(i)
             end = i
+            print("ConvertINT: " + str(float(data[start:end])))
             break;
 
     return [str(float(data[start:end])), end]
