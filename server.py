@@ -24,6 +24,10 @@ def index():
 
     if request.method == "POST":
         selection = request.form.get('selection')
+
+        if selection == "none":
+            return redirect(request.url)
+
         filename = "/data/" + selection
 
         return render_template("index.html", selectModel=selectModel, filename=filename)
@@ -39,6 +43,10 @@ def single():
 
     if request.method == 'POST':
         selection = request.form.get('selection')
+
+        if selection == "none":
+            return redirect(request.url)
+
         filename = "/data/" + selection
 
         return render_template("single_model.html", selectModel=selectModel, filename=filename)
@@ -49,6 +57,7 @@ def single():
 
 @app.route('/view_single', methods=["POST"])
 def viewSingle():
+    #examine deformed model in a single model page, selected from multi model page
     
     if request.method == "POST":
         
@@ -93,6 +102,7 @@ def send_data(path):
 #--------------------------------------#
 @app.route('/recordEquation')
 def recordEquation():
+    #records the selected equation into the database
 
     equation = request.args.get('equation')
 
@@ -125,48 +135,40 @@ def returnRandomEQ():
 #--------------------------------------#
 @app.route('/checkINT')
 def checkINT():
+    # check for integers, convert into float if true
 
-    data = request.args.get('data', 0)
-    data = str(data)
+    data = str(request.args.get('data', 0))
     convertedData = ""
-    print(data)
 
     if data != 0:
 
         i = 0
 
-        while i <= len(data)-1:
+        while i <= len(data) - 1:
             try:
                 float(data[i])
-                print("Float passed, accessing convertINT with: " + str(i))
                 convertedINT, i = convertINT(data, i)
-                convertedData = convertedData + convertedINT
+                convertedData += convertedINT
 
-
-            except (ValueError, IndexError):
-                convertedData = convertedData + data[i]
-                print(convertedData)
-                i = i + 1
-
+            except ValueError:
+                convertedData += data[i]
+                i += 1
     print(convertedData)
     return jsonify(convertedData)
 
 def convertINT(data, start):
+    # checks if the integer(s) in the string has more than one digit
 
     i = start
+
     while True:
 
         try:
-            i = i + 1
+            i += 1
             float(data[i])
-            print("Testing index is: " + str(i))
-            print(data[i])
 
         except (ValueError, IndexError):
-            print("Value Error index is: " + str(i))
-            print(i)
             end = i
-            print("ConvertINT: " + str(float(data[start:end])))
             break;
 
     return [str(float(data[start:end])), end]
@@ -179,6 +181,7 @@ def allowed_file(filename):
 
 
 def uploadModel(file):
+    #uploads model into the database
 
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -195,43 +198,49 @@ def uploadModel(file):
     filename = "/data/" + filename
     return filename
 
-
 @app.route('/uploadSingle', methods=['GET', 'POST'])
 def uploadSingle():
+    #upload funcion for single model page
+
     if request.method == 'POST':
-        
+
         if 'file' not in request.files:
             print('No file part')
             return redirect(request.url)
-        
+
         file = request.files['file']
-        
+
         if file and allowed_file(file.filename):
 
             filename = uploadModel(file)
-            
-            return render_template("single_model.html", filename=filename)
-        
+            alert = file.filename + " has been uploaded."
+            selectModel = getRow("models")
+
+            return render_template("single_model.html", filename=filename, selectModel=selectModel, alert=alert)
+
     return render_template("single_model.html")
 
-            
+
 @app.route('/uploadMulti', methods=['GET', 'POST'])
 def uploadMulti():
-    
+    #upload function for multi model page
+
     if request.method == 'POST':
-        
+
         if 'file' not in request.files:
-            print('No file part')
+            print("No file part")
             return redirect(request.url)
-        
+
         file = request.files['file']
-        
+
         if file and allowed_file(file.filename):
 
             filename = uploadModel(file)
-            
-            return render_template("index.html", filename=filename)
-        
+            alert = file.filename + " has been uploaded."
+            selectModel = getRow("models")
+
+            return render_template("index.html", filename=filename, selectModel=selectModel, alert=alert)
+
     return render_template("index.html")
 
 
@@ -244,6 +253,7 @@ def shutdown_server():
 
 #--------------------------------------#
 def getRow(table):
+    #returns rows of saved models' names
 
     con = sqlite3.connect("database.db")
     con.row_factory = sqlite3.Row
