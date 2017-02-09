@@ -58,18 +58,19 @@
 <input type="button" onclick="location.href='/'" value="Multi Model View">
 <input type="button" onclick="getRandomEquation()" value="Get Random Equation">
 	
-{% if selectModel %} <!--allows user to select saved models-->
-<form action="/single_model" method="POST">
+<form action="/" method="POST">
 <select name = "selection">
+	{% if selectModel %}
+	<option value="none">Please select a model</option>
 	{% for row in selectModel %}
 	<option value='{{row["modelName"]}}'>{{row["modelName"]}}</option>
 	{% endfor %}
+	{% else %}
+	<option value="none">No Models Found</option>
+	{% endif %}
 	<input type="submit" value="submit">
 </select>
 </form>
-{% endif %}
-	
-</div>
 
 <form enctype = "multipart/form-data" action="/uploadSingle" method='POST'> <!--form to upload model-->
 <input type="file" name="file">
@@ -163,7 +164,7 @@ gui.add(controls, 'save');
 var eqController = gui.add(controls, 'equation');
 eqController.onFinishChange(function(value) {
     // Fires when controller loses focus.
-    textboxShader(value);
+    checkINT(value);
 });
 
 
@@ -212,6 +213,10 @@ function initCameras()
 
 init();
 animate();
+
+{% if alert %}
+alert('{{alert}}');
+{% endif %}
 
 function init()
 {
@@ -272,8 +277,21 @@ function onObjectLoadSuccess(obj)
     scene.add(model);
 }
 
+function checkINT(data){
+
+	var data = data;
+	
+	$.getJSON('/checkINT',
+	{ data: data },
+	function(data) {
+		textboxShader(data);
+	});
+	
+}
+
 function textboxShader(data)
 {
+	
 
     var header = document.getElementById('vertexShaderHeader').textContent;
     var footer = document.getElementById('vertexShaderFooter').textContent;

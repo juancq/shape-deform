@@ -59,16 +59,20 @@
 <input type="button" onclick="location.href='/single_model'" value="Single Model View">
 <input type="button" onclick="sendShader()" value="Single Model with Selected Shader">
 
-{% if selectModel %}
 <form action="/" method="POST">
 <select name = "selection">
+	{% if selectModel %}
+	<option value="none">Please select a model</option>
 	{% for row in selectModel %}
 	<option value='{{row["modelName"]}}'>{{row["modelName"]}}</option>
 	{% endfor %}
+	{% else %}
+	<option value="none">No Models Found</option>
+	{% endif %}
 	<input type="submit" value="submit">
 </select>
 </form>
-{% endif %}
+
 	
 </div>
 
@@ -309,6 +313,9 @@ function initCameras()
 init();
 animate();
 
+{% if alert %}
+alert('{{alert}}');
+{% endif %}
 
 function init() 
 {
