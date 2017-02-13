@@ -24,6 +24,10 @@ def index():
 
     if request.method == "POST":
         selection = request.form.get('selection')
+
+        if selection == "none":
+            return redirect(request.url)
+
         filename = "/data/" + selection
 
         return render_template("index.html", selectModel=selectModel, filename=filename)
@@ -39,6 +43,10 @@ def single():
 
     if request.method == 'POST':
         selection = request.form.get('selection')
+
+        if selection == "none":
+            return redirect(request.url)
+
         filename = "/data/" + selection
 
         return render_template("single_model.html", selectModel=selectModel, filename=filename)
@@ -49,7 +57,7 @@ def single():
 
 @app.route('/view_single', methods=["POST"])
 def viewSingle():
-
+    #examine deformed model in a single model page, selected from multi model page
     if request.method == "POST":
 
         shader = request.form['shader']
@@ -93,6 +101,7 @@ def send_data(path):
 #--------------------------------------#
 @app.route('/recordEquation')
 def recordEquation():
+    #records the selected equation into the database
 
     equation = request.args.get('equation')
 
@@ -129,6 +138,7 @@ def allowed_file(filename):
 
 
 def uploadModel(file):
+    #uploads model into the database
 
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -145,9 +155,10 @@ def uploadModel(file):
     filename = "/data/" + filename
     return filename
 
-
 @app.route('/uploadSingle', methods=['GET', 'POST'])
 def uploadSingle():
+    #upload funcion for single model page
+
     if request.method == 'POST':
 
         if 'file' not in request.files:
@@ -159,19 +170,24 @@ def uploadSingle():
         if file and allowed_file(file.filename):
 
             filename = uploadModel(file)
+            alert = file.filename + " has been uploaded."
+            selectModel = getRow("models")
 
-            return render_template("single_model.html", filename=filename)
+            return render_template("single_model.html", filename=filename, selectModel=selectModel, alert=alert)
+
 
     return render_template("single_model.html")
 
 
 @app.route('/uploadMulti', methods=['GET', 'POST'])
 def uploadMulti():
+    #upload function for multi model page
+
 
     if request.method == 'POST':
 
         if 'file' not in request.files:
-            print('No file part')
+            print("No file part")
             return redirect(request.url)
 
         file = request.files['file']
@@ -179,8 +195,10 @@ def uploadMulti():
         if file and allowed_file(file.filename):
 
             filename = uploadModel(file)
+            alert = file.filename + " has been uploaded."
+            selectModel = getRow("models")
 
-            return render_template("index.html", filename=filename)
+            return render_template("index.html", filename=filename, selectModel=selectModel, alert=alert)
 
     return render_template("index.html")
 
@@ -194,6 +212,7 @@ def shutdown_server():
 
 #--------------------------------------#
 def getRow(table):
+    #returns rows of saved models' names
 
     con = sqlite3.connect("database.db")
     con.row_factory = sqlite3.Row

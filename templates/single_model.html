@@ -53,16 +53,24 @@
 <div style="background-color: black; padding: 3px 0px">
 
 
-{% if selectModel %} <!--allows user to select saved models-->
-<form action="/single_model" method="POST">
+<div style="background-color: black; padding: 3px 0px">
+<input type="button" onclick="location.href='/'" value="Multi Model View">
+<input type="button" onclick="getRandomEquation()" value="Get Random Equation">
+	
+<form action="/" method="POST">
+
 <select name = "selection">
+	{% if selectModel %}
+	<option value="none">Please select a model</option>
 	{% for row in selectModel %}
 	<option value='{{row["modelName"]}}'>{{row["modelName"]}}</option>
 	{% endfor %}
+	{% else %}
+	<option value="none">No Models Found</option>
+	{% endif %}
 	<input type="submit" value="submit">
 </select>
 </form>
-{% endif %}
 
 </div>
 
@@ -134,6 +142,10 @@ var cameraControl;
 
 var clock = new THREE.Clock();
 
+var convertedData;
+var convertedInt = "";
+var temp;
+
 /*
 // init GUI
 var controls = new function() {
@@ -153,7 +165,7 @@ gui.add(controls, 'save');
 var eqController = gui.add(controls, 'equation');
 eqController.onFinishChange(function(value) {
     // Fires when controller loses focus.
-    textboxShader(value);
+    checkINT(value);
 });
 */
 
@@ -202,6 +214,10 @@ function initCameras()
 init();
 animate();
 
+{% if alert %}
+alert('{{alert}}');
+{% endif %}
+	
 function init()
 {
 
@@ -261,8 +277,58 @@ function onObjectLoadSuccess(obj)
     scene.add(model);
 }
 
+function checkINT(shader){
+	//checks for integers in the string equation
+	
+	convertedData = "";
+	
+	for(i = 0; i<shader.length; i++){
+	
+		if(Number.isInteger(parseInt(shader[i]))){
+		
+			temp = convertINT(shader, i);
+			
+			convertedData += temp[0];
+			i = temp[1];
+			
+		} else {
+			
+			convertedData += shader[i];
+			
+		}
+	}
+	
+	textboxShader(convertedData);
+	
+}
+
+function convertINT(shader, i){
+	//find double digits and convert integers to float
+	
+	var start = i;
+	convertedInt = "";
+	
+	while(shader[i]){
+		
+		if(Number.isInteger(parseInt(shader[i]))){
+		
+			i++;
+			
+		} else {
+			
+			for(j=start; j<i; j++)
+			{
+				convertedInt += shader[j];
+			}
+			
+			return [convertedInt+=".0", i-1];
+		}
+	}
+}
+
 function textboxShader(data)
 {
+	
 
     var header = document.getElementById('vertexShaderHeader').textContent;
     var footer = document.getElementById('vertexShaderFooter').textContent;
