@@ -133,48 +133,6 @@ def returnRandomEQ():
     return jsonify(result=equation)
 
 #--------------------------------------#
-@app.route('/checkINT')
-def checkINT():
-    # check for integers, convert into float if true
-
-    data = str(request.args.get('data', 0))
-    convertedData = ""
-
-    if data != 0:
-
-        i = 0
-
-        while i <= len(data) - 1:
-            try:
-                float(data[i])
-                convertedINT, i = convertINT(data, i)
-                convertedData += convertedINT
-
-            except ValueError:
-                convertedData += data[i]
-                i += 1
-    print(convertedData)
-    return jsonify(convertedData)
-
-def convertINT(data, start):
-    # checks if the integer(s) in the string has more than one digit
-
-    i = start
-
-    while True:
-
-        try:
-            i += 1
-            float(data[i])
-
-        except (ValueError, IndexError):
-            end = i
-            break;
-
-    return [str(float(data[start:end])), end]
-
-
-#--------------------------------------#
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

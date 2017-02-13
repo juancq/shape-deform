@@ -146,6 +146,10 @@ var cameraControl;
 
 var clock = new THREE.Clock();
 
+var convertedData;
+var convertedInt = "";
+var temp;
+
 // init GUI
 var controls = new function() {
 
@@ -217,7 +221,7 @@ animate();
 {% if alert %}
 alert('{{alert}}');
 {% endif %}
-
+	
 function init()
 {
 
@@ -277,16 +281,53 @@ function onObjectLoadSuccess(obj)
     scene.add(model);
 }
 
-function checkINT(data){
+function checkINT(shader){
+	//checks for integers in the string equation
+	
+	convertedData = "";
+	
+	for(i = 0; i<shader.length; i++){
+	
+		if(Number.isInteger(parseInt(shader[i]))){
+		
+			temp = convertINT(shader, i);
+			
+			convertedData += temp[0];
+			i = temp[1];
+			
+		} else {
+			
+			convertedData += shader[i];
+			
+		}
+	}
+	
+	textboxShader(convertedData);
+	
+}
 
-	var data = data;
+function convertINT(shader, i){
+	//find double digits and convert integers to float
 	
-	$.getJSON('/checkINT',
-	{ data: data },
-	function(data) {
-		textboxShader(data);
-	});
+	var start = i;
+	convertedInt = "";
 	
+	while(shader[i]){
+		
+		if(Number.isInteger(parseInt(shader[i]))){
+		
+			i++;
+			
+		} else {
+			
+			for(j=start; j<i; j++)
+			{
+				convertedInt += shader[j];
+			}
+			
+			return [convertedInt+=".0", i-1];
+		}
+	}
 }
 
 function textboxShader(data)
