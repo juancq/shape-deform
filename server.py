@@ -58,15 +58,14 @@ def single():
 @app.route('/view_single', methods=["POST"])
 def viewSingle():
     #examine deformed model in a single model page, selected from multi model page
-    
     if request.method == "POST":
-        
+
         shader = request.form['shader']
         print(shader)
         return render_template("single_model.html", shader=shader)
-    
+
     else:
-        
+
         return render_template("single_model.html")
 
 #--------------------------------------#
@@ -76,7 +75,7 @@ def start():
     size = request.args.get('size', 0, type=int)
 
     # start ga
-    ga.on_start(popsize = 100, subset_size = size)
+    ga.on_start(popsize = 50, subset_size = size)
 
     subset = ga.get_subset()
     return jsonify(result=subset)
@@ -151,7 +150,7 @@ def uploadModel(file):
 
     con.commit()
     con.close()
-                
+
     file.save(filepath)
     filename = "/data/" + filename
     return filename
@@ -176,12 +175,14 @@ def uploadSingle():
 
             return render_template("single_model.html", filename=filename, selectModel=selectModel, alert=alert)
 
+
     return render_template("single_model.html")
 
 
 @app.route('/uploadMulti', methods=['GET', 'POST'])
 def uploadMulti():
     #upload function for multi model page
+
 
     if request.method == 'POST':
 

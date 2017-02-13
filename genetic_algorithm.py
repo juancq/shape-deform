@@ -58,6 +58,12 @@ pset.addPrimitive(protectedDiv, 2)
 pset.addPrimitive(operator.neg, 1)
 pset.addPrimitive(math.cos, 1)
 pset.addPrimitive(math.sin, 1)
+#pset.addPrimitive(math.pow, 2)
+pset.addPrimitive(math.log, 2)
+#pset.addPrimitive(operator.mod, 2)
+pset.addPrimitive(math.sqrt, 1)
+pset.addPrimitive(math.floor, 1)
+pset.addPrimitive(math.ceil, 1)
 pset.addEphemeralConstant("rand101", lambda: random.uniform(-1,1))
 pset.renameArguments(ARG0='x')
 pset.renameArguments(ARG1='y')
@@ -68,14 +74,14 @@ creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Individual", gplib.PrimitiveTree, fitness=creator.FitnessMin)
 
 toolbox = base.Toolbox()
-toolbox.register("expr", gplib.genHalfAndHalf, pset=pset, min_=1, max_=3)
+toolbox.register("expr", gplib.genHalfAndHalf, pset=pset, min_=1, max_=4)
 toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 #toolbox.register("compile", gp.compile, pset=pset)
 toolbox.register("compile", compile, pset=pset)
 
 #samples = [np.linspace(-10, 10, 1000) for i in range(3)]
-samples = [np.linspace(-10, 10, 1000), np.linspace(0, 100, 1000)]
+samples = [np.linspace(-20, 20, 10000), np.linspace(0, 100, 1000)]
 
 vpoints = np.linspace(-10, 10, 1000)
 time_samples = np.linspace(0, 10, 20)
@@ -144,8 +150,8 @@ class Container:
         self.population = None
         self.subset = None
         self.gen = 0
-        self.cxpb = 0.7
-        self.mutpb = 0.01
+        self.cxpb = 0.5
+        self.mutpb = 0.10
 
         self.popsize = 100
         self.subset_size = 9
@@ -164,6 +170,7 @@ class Container:
         expr = expr.replace('sub', '-')
         expr = expr.replace('neg', '-')
         expr = expr.replace('protectedDiv', '/')
+        expr = expr.replace('mod', '%')
         return expr
 
 #----------------------------#
