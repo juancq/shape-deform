@@ -165,7 +165,6 @@ gui.add(controls, 'save');
 var eqController = gui.add(controls, 'equation');
 eqController.onFinishChange(function(value) {
     // Fires when controller loses focus.
-    checkINT(value);
 });
 */
 
@@ -277,58 +276,20 @@ function onObjectLoadSuccess(obj)
     scene.add(model);
 }
 
-function checkINT(shader){
-	//checks for integers in the string equation
-	
-	convertedData = "";
-	
-	for(i = 0; i<shader.length; i++){
-	
-		if(Number.isInteger(parseInt(shader[i]))){
-		
-			temp = convertINT(shader, i);
-			
-			convertedData += temp[0];
-			i = temp[1];
-			
-		} else {
-			
-			convertedData += shader[i];
-			
-		}
-	}
-	
-	textboxShader(convertedData);
-	
-}
-
-function convertINT(shader, i){
-	//find double digits and convert integers to float
-	
-	var start = i;
-	convertedInt = "";
-	
-	while(shader[i]){
-		
-		if(Number.isInteger(parseInt(shader[i]))){
-		
-			i++;
-			
-		} else {
-			
-			for(j=start; j<i; j++)
-			{
-				convertedInt += shader[j];
-			}
-			
-			return [convertedInt+=".0", i-1];
-		}
-	}
-}
-
+/**
+ * Takes equation in textbox and applies it to the model
+ * by using equation in the vertex shader of the model's material.
+ * @param {string} data
+ *
+ */
 function textboxShader(data)
 {
-	
+    // type cast any ints to floats so that vertex shader compiles
+    var matches = data.match(/\d+/g);
+    for (var i = 0; i < matches.length; i++)
+    {
+    	data = data.replace(matches[i], String(parseFloat(matches[i]).toFixed(1)));
+    }
 
     var header = document.getElementById('vertexShaderHeader').textContent;
     var footer = document.getElementById('vertexShaderFooter').textContent;
