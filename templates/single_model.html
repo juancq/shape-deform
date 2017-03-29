@@ -285,7 +285,7 @@ function onObjectLoadSuccess(obj)
 function textboxShader(data)
 {
     // type cast any ints to floats so that vertex shader compiles
-    var matches = data.match(/\d+/g);
+    var matches = data.match(/\d+(\.\d+)?/g);
     for (var i = 0; i < matches.length; i++)
     {
     	data = data.replace(matches[i], String(parseFloat(matches[i]).toFixed(1)));
