@@ -56,9 +56,9 @@
 <div style="background-color: black; padding: 3px 0px">
 <input type="button" onclick="location.href='/'" value="Multi Model View">
 <input type="button" onclick="getRandomEquation()" value="Get Random Equation">
+<input type="button" onclick="location.href='/treeEQ'" value="Tree Equation">
 	
-<form action="/" method="POST">
-
+<form action="/single_model" method="POST">
 <select name = "selection">
 	{% if selectModel %}
 	<option value="none">Please select a model</option>
@@ -286,10 +286,12 @@ function textboxShader(data)
 {
     // type cast any ints to floats so that vertex shader compiles
     var matches = data.match(/\d+(\.\d+)?/g);
-    for (var i = 0; i < matches.length; i++)
-    {
-    	data = data.replace(matches[i], String(parseFloat(matches[i]).toFixed(1)));
-    }
+	if(matches != null){ 
+		for (var i = 0; i < matches.length; i++)
+		{
+			data = data.replace(matches[i], String(parseFloat(matches[i]).toFixed(1)));
+		}
+	}
 
     var header = document.getElementById('vertexShaderHeader').textContent;
     var footer = document.getElementById('vertexShaderFooter').textContent;
