@@ -20,14 +20,7 @@
 
 <body>
 
-<div class="nav">
-    <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="/single_model">Single Mode View</a></li>
-        <li><a href="/">Multi Mode View</a></li>
-        <li><a href="#">About</a></li>
-    </ul>
-</div>
+{% include 'navigation_bar.html' %}
 
 <div id="sidebar">
   <ul>
@@ -48,29 +41,20 @@
 		</li>
   </ul>
 
-</div>
 
-<div style="background-color: black; padding: 3px 0px">
-
-
-<div style="background-color: black; padding: 3px 0px">
-<input type="button" onclick="location.href='/'" value="Multi Model View">
-<input type="button" onclick="getRandomEquation()" value="Get Random Equation">
-	
-<form action="/" method="POST">
-
-<select name = "selection">
-	{% if selectModel %}
-	<option value="none">Please select a model</option>
-	{% for row in selectModel %}
-	<option value='{{row["modelName"]}}'>{{row["modelName"]}}</option>
-	{% endfor %}
-	{% else %}
-	<option value="none">No Models Found</option>
-	{% endif %}
-	<input type="submit" value="submit">
-</select>
-</form>
+    <form action="/" method="POST">
+    <select name = "selection">
+	    {% if selectModel %}
+	    <option value="none">Please select a model</option>
+	    {% for row in selectModel %}
+	    <option value='{{row["modelName"]}}'>{{row["modelName"]}}</option>
+	    {% endfor %}
+	    {% else %}
+	    <option value="none">No Models Found</option>
+	    {% endif %}
+	    <input type="submit" value="submit">
+    </select>
+    </form>
 
 </div>
 
