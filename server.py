@@ -233,9 +233,8 @@ def getRow(table):
 
     return rows
 
-#=======================================#
-#          Equation from Trees          #
-#=======================================#
+#--------------------------------------#
+# Tree Equations
 
 operators = ["+", "-", "/", "*"]
 cOperators = ["sin", "cos", "tan"]
@@ -285,9 +284,9 @@ def determineNoChildren(operator):
     else:
         return 1
 
-def opChild(tree, index):
+def equationInorder(tree, index):
 
-    #genetate string of equations from index's child, based on type of operators
+    #generate string of equation from index's child, based on type of operators
 
     children = tree.is_branch(index)
     equation = "(" + str(tree[children[0]].tag) + tree[index].tag + str(tree[children[1]].tag) + ")"
@@ -295,7 +294,7 @@ def opChild(tree, index):
 
     return tree
 
-def cOpChild(tree, index):
+def trigonometricEquation(tree, index):
 
     child = tree.is_branch(index)
     equation = str(tree[index].tag) + "(" + str(tree[child[0]].tag) + ")"
@@ -348,12 +347,12 @@ def generateEquation(tree):
     if tree[0].tag in cOperators:
 
         if tree[1].tag in cOperators:
-            tree = cOpChild(tree, 1)
-            tree = cOpChild(tree, 0)
+            tree = trigonometricEquation(tree, 1)
+            tree = trigonometricEquation(tree, 0)
 
         elif tree[1].tag in operators:
-            tree = opChild(tree, 1)
-            tree = cOpChild(tree, 0)
+            tree = equationInorder(tree, 1)
+            tree = trigonometricEquation(tree, 0)
 
         else:
             tree[0].tag = tree[0].tag + "(" + str(tree[1].tag) + ")"
@@ -365,12 +364,12 @@ def generateEquation(tree):
         for child in children:
 
             if tree[children[child-1]].tag in cOperators:
-                tree = cOpChild(tree, child)
+                tree = trigonometricEquation(tree, child)
 
             elif tree[children[child-1]].tag in operators:
-                tree = opChild(tree, child)
+                tree = equationInorder(tree, child)
 
-        tree = opChild(tree, 0)
+        tree = equationInorder(tree, 0)
 
     return tree[0].tag
 #--------------------------------------#
