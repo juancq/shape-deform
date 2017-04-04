@@ -20,14 +20,7 @@
 
 <body>
 
-<div class="nav">
-    <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="/single_model">Single Mode View</a></li>
-        <li><a href="/">Multi Mode View</a></li>
-        <li><a href="#">About</a></li>
-    </ul>
-</div>
+{% include 'navigation_bar.html' %}
 
 <div id="sidebar">
   <ul>
@@ -48,17 +41,18 @@
 		</li>
   </ul>
 
-</div>
-
-<div style="background-color: black; padding: 3px 0px">
-
-
-<div style="background-color: black; padding: 3px 0px">
+<p>
 <input type="button" onclick="location.href='/'" value="Multi Model View">
+</p>
+<p>
 <input type="button" onclick="getRandomEquation()" value="Get Random Equation">
+</p>
+<p>
+<input type="button" onclick="location.href='/treeEQ'" value="Tree Equation">
+</p>
 	
-<form action="/" method="POST">
-
+<p>
+<form action="/single_model" method="POST">
 <select name = "selection">
 	{% if selectModel %}
 	<option value="none">Please select a model</option>
@@ -71,6 +65,7 @@
 	<input type="submit" value="submit">
 </select>
 </form>
+</p>
 
 </div>
 
@@ -285,11 +280,25 @@ function onObjectLoadSuccess(obj)
 function textboxShader(data)
 {
     // type cast any ints to floats so that vertex shader compiles
-    var matches = data.match(/\d+(\.\d+)?/g);
-    for (var i = 0; i < matches.length; i++)
-    {
-    	data = data.replace(matches[i], String(parseFloat(matches[i]).toFixed(1)));
+    var matches = data.match(/\d+(\.\d*)?/g);
+    var cur_index = -1;
+    var replace_str = '';
+    var newdata = '';
+    if(matches != null){ 
+	for (var i = 0; i < matches.length; i++)
+	{
+	    replace_str = String(parseFloat(matches[i]).toFixed(1));
+	    data = data.replace(matches[i], replace_str);
+	    cur_index = data.indexOf(rep)
+	    // make sure that new replacements only affect the parts of the
+	    // string that have not been replaced
+	    newdata += data.substring(0, cur_index + replace_str.length)
+	    data = data.substring(cur_index + replace_str.length)
+	}
     }
+
+    // string with all replacements + original string tail
+    data = newdata + data;
 
     var header = document.getElementById('vertexShaderHeader').textContent;
     var footer = document.getElementById('vertexShaderFooter').textContent;
