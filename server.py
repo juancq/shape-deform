@@ -59,10 +59,17 @@ def single():
 def treeEQ():
 
     equation = generateEquation(generateTree())
-    print(equation)
-    selectModel = getRow("models")
 
-    return render_template("single_model.html", selectModel=selectModel, shader=equation)
+    return jsonify(result=equation)
+
+@app.route('/randTreeEQ')
+def randTreeEQ():
+
+    equation = request.args.get('equation', 0)
+    equation = similarTreeEquations(equation)
+
+    return jsonify(result=equation)
+
 
 
 @app.route('/view_single', methods=["POST"])
@@ -72,6 +79,7 @@ def viewSingle():
 
         shader = request.form['shader']
         print(shader)
+
         return render_template("single_model.html", shader=shader)
 
     else:
@@ -247,13 +255,13 @@ def randomOperator():
 
 def randomVariable():
 
-    variables = ["x", "y", "z"]
+    variables = ["x", "y", "z", "time"]
 
     return random.choice(variables)
 
 def randomValue():
 
-    variables = ["x", "y", "z"]
+    variables = ["x", "y", "z", "time"]
 
     if random.randint(0, 100) % 2 == 0:
         num = random.randint(1, 1)
@@ -372,6 +380,31 @@ def generateEquation(tree):
         tree = equationInorder(tree, 0)
 
     return tree[0].tag
+
+
+def similarTreeEquations(equation):
+
+    if random.randint(0, 100) % 2 == 0:
+
+        equation += random.choice(operators) + randomVariable()
+
+    elif random.randint(0,100) % 2 == 0:
+
+        equation += random.choice(operators) + random.choice(cOperators) + "(" + randomVariable() + ")"
+
+        if random.randint(0, 100) < 50:
+            equation += random.choice(operators) + randomVariable()
+
+    else:
+
+        newVariable = randomVariable()
+
+        for variable in ['x', 'y', 'z']:
+            equation = equation.replace(variable, newVariable)
+
+    return equation
+
+
 #--------------------------------------#
 def main():
     app.run(

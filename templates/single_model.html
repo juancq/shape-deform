@@ -48,7 +48,9 @@
 <input type="button" onclick="getRandomEquation()" value="Get Random Equation">
 </p>
 <p>
-<input type="button" onclick="location.href='/treeEQ'" value="Tree Equation">
+<input type="button" onclick="treeEQ()" value="Tree Equation">
+<p>
+<input type="button" onclick="randTreeEQ()" value="Get Similar Tree Equation">
 </p>
 	
 <p>
@@ -394,6 +396,36 @@ function getRandomEquation() {
 // Apply equation from the equation text field on the sidebar
 function applyEquation() {
   textboxShader(document.getElementById("equationTextField").value);
+}
+
+function treeEQ(){
+	
+	$.getJSON('/treeEQ', function(data) {
+	
+	textboxShader(data.result);
+	document.getElementById("equationTextField").value = data.result;
+	
+	});
+	
+}
+
+function randTreeEQ(){
+	// send equation to be further randomized
+	
+	if (document.getElementById("equationTextField").value == ""){
+		return alert("No equations in the field.");
+	} else {
+	equation = document.getElementById("equationTextField").value
+	}
+	
+	$.getJSON('/randTreeEQ',
+	{ equation: equation },
+	function(data) {
+
+		textboxShader(data.result);
+		document.getElementById("equationTextField").value = data.result;
+
+  });
 }
 
 </script>
