@@ -20,14 +20,7 @@
 
 <body>
 
-<div class="nav">
-    <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="/single_model">Single Mode View</a></li>
-        <li><a href="/">Multi Mode View</a></li>
-        <li><a href="#">About</a></li>
-    </ul>
-</div>
+{% include 'navigation_bar.html' %}
 
 <div id="sidebar">
   <ul>
@@ -47,11 +40,6 @@
 			</form>
 		</li>
   </ul>
-
-</div>
-
-<div style="background-color: black; padding: 3px 0px">
-
 
 <div style="background-color: black; padding: 3px 0px">
 <input type="button" onclick="location.href='/'" value="Multi Model View">
