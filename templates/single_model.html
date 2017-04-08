@@ -291,7 +291,7 @@ function textboxShader(data)
 	{
 	    replace_str = String(parseFloat(matches[i]).toFixed(1));
 	    data = data.replace(matches[i], replace_str);
-	    cur_index = data.indexOf(rep)
+	    cur_index = data.indexOf(replace_str)
 	    // make sure that new replacements only affect the parts of the
 	    // string that have not been replaced
 	    newdata += data.substring(0, cur_index + replace_str.length)
