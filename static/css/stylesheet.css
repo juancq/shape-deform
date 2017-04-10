@@ -1,3 +1,26 @@
+/*
+body {
+    color: #000;
+    font-family:Monospace;
+    font-size:13px;
+    text-align:center;
+
+    background-color: #fff;
+    margin: 0px;
+    overflow: hidden;
+}
+
+#info {
+    position: absolute;
+    top: 0px; width: 100%;
+    padding: 5px;
+}
+*/
+
+			a {
+
+				color: #0080ff;
+			}
 body {
 	color: #fff;
 	font-family: Monospace;
@@ -46,11 +69,14 @@ body {
 #canvas {
 	background-color: #000;
 	/*width: %;*/
-	height: 100%;
 	border: 1px solid black;
-	position: fixed;
-	left: 20%;
+        position:absolute;
+        height: 100%;
+        /*width: calc(100% - 20%);*/
+        width: 80%;
+        left: 20%;
 }
+
 
 
 /* Header */
@@ -86,4 +112,12 @@ body {
 
 .nav ul li a:active {
   color: white;
+}
+
+.selected {
+    background:#90EE90;
+}
+
+.unselected {
+    background:clear;
 }

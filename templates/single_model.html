@@ -6,7 +6,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/single_model.css') }}">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/stylesheet.css') }}">
 
 
     <script src="/js/dat.gui.js"></script>
@@ -48,7 +48,9 @@
 <input type="button" onclick="getRandomEquation()" value="Get Random Equation">
 </p>
 <p>
-<input type="button" onclick="location.href='/treeEQ'" value="Tree Equation">
+<input type="button" onclick="treeEQ()" value="Tree Equation">
+<p>
+<input type="button" onclick="randTreeEQ()" value="Get Similar Tree Equation">
 </p>
 	
 <p>
@@ -289,7 +291,7 @@ function textboxShader(data)
 	{
 	    replace_str = String(parseFloat(matches[i]).toFixed(1));
 	    data = data.replace(matches[i], replace_str);
-	    cur_index = data.indexOf(rep)
+	    cur_index = data.indexOf(replace_str)
 	    // make sure that new replacements only affect the parts of the
 	    // string that have not been replaced
 	    newdata += data.substring(0, cur_index + replace_str.length)
@@ -394,6 +396,36 @@ function getRandomEquation() {
 // Apply equation from the equation text field on the sidebar
 function applyEquation() {
   textboxShader(document.getElementById("equationTextField").value);
+}
+
+function treeEQ(){
+	
+	$.getJSON('/treeEQ', function(data) {
+	
+	textboxShader(data.result);
+	document.getElementById("equationTextField").value = data.result;
+	
+	});
+	
+}
+
+function randTreeEQ(){
+	// send equation to be further randomized
+	
+	if (document.getElementById("equationTextField").value == ""){
+		return alert("No equations in the field.");
+	} else {
+	equation = document.getElementById("equationTextField").value
+	}
+	
+	$.getJSON('/randTreeEQ',
+	{ equation: equation },
+	function(data) {
+
+		textboxShader(data.result);
+		document.getElementById("equationTextField").value = data.result;
+
+  });
 }
 
 </script>
