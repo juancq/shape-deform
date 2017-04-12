@@ -186,8 +186,10 @@ function defineViewports()
 
 function initCameras()
 {
-    // one camera for each viewport
+    windowWidth = container.offsetWidth;
+    windowHeight = container.offsetHeight;
 
+    // one camera for each viewport
     var camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
     camera.position.x = 0;
     camera.position.y = 10;
@@ -332,12 +334,11 @@ function textboxShader(data)
 
 function updateSize()
 {
-    if ( windowWidth != window.innerWidth || windowHeight != window.innerHeight )
-
+    if ( windowWidth != container.offsetWidth || windowHeight != container.offsetHeight ) 
+    
     {
-        windowWidth  = window.innerWidth;
-        windowHeight = window.innerHeight;
-
+	windowWidth = container.offsetWidth;
+	windowHeight = container.offsetHeight;
         renderer.setSize ( windowWidth, windowHeight );
     }
 }
