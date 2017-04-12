@@ -93,17 +93,35 @@ def start():
     size = request.args.get('size', 0, type=int)
 
     # start ga
-    ga.on_start(popsize = 50, subset_size = size)
+    # ga.on_start(popsize = 50, subset_size = size)
+    #
+    # subset = ga.get_subset()
 
-    subset = ga.get_subset()
+    subset = []
+
+    for i in range(0, 9):
+        subset.append(generateEquation(generateTree()))
+
     return jsonify(result=subset)
 
 #--------------------------------------#
 @app.route('/_step')
 def step():
-    selection = request.args.get('sel', 0, type=int)
-    ga.iga_step(selection)
-    subset = ga.get_subset()
+    selection = request.args.get('sel', 0)
+    # ga.iga_step(selection)
+    # subset = ga.get_subset()
+
+    subset = []
+
+    if selection == 0:
+        #Model not altered or request was an error; revert all to default state
+        for i in range(0, 9):
+            subset.append("0.0")
+
+    else:
+        for i in range(0, 9):
+            subset.append(similarTreeEquations(selection))
+
     return jsonify(result=subset)
 
 #--------------------------------------#

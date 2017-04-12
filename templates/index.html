@@ -431,7 +431,7 @@ function next()
 	updateStatus('Processing...');
 	
 	$.getJSON('/_step', {
-		sel: selectedIndex,
+		sel: vexProgArray[prevSel],
 	    }, 
 	function(data) {
 	    applyShaders(data);
@@ -439,6 +439,7 @@ function next()
 	    clearSelection();
 	});
     }
+	
 }
 
 
