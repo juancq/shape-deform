@@ -63,7 +63,7 @@ body {
 	border-bottom: 1px solid #111;
 	display: block;
 	width: 100%;
-	height: 20px;
+	height: 25px;
 	padding: 5% 0% 5% 0%;
 	text-decoration: none;
 }
@@ -102,11 +102,11 @@ body {
 .nav ul li a {
 	vertical-align: middle;
 	font-size: 150%;
-  text-decoration: none;
-  float: right;
-  display: block;
-  padding: 10px 20px;
-  color: #ccc;
+   text-decoration: none;
+   float: right;
+   display: block;
+   padding: 10px 20px;
+   color: #ccc;
 }
 
 .nav ul li a:hover {
@@ -123,4 +123,53 @@ body {
 
 .unselected {
     background:clear;
+}
+
+.submit {
+	background: #1C1E1F;
+	color: #ccc;
+	border: 1px solid #ccc;
+	padding: 3px;
+	font-family: Monospace;
+	width: 70px;
+	border-radius: 50px;
+	cursor: pointer;
+}
+
+.submit:active {
+	background-color: #ccc;
+	color: #1C1E1F;
+}
+
+
+.btn {
+	background: #1C1E1F;
+	width: 80%;
+	color: #ccc;
+	border: 2px solid #ccc;
+	border-radius: 5px;
+	padding: 5px;
+	font-family: Monospace;
+	font-size: 14px;
+	text-align: center;
+	cursor: pointer;
+}
+
+.btn:hover{
+	color: #ccc;
+	border: 2px solid lightskyblue;
+  	width: calc(80% - 10px);
+}
+
+.btn:active{
+	background: #ccc;
+}
+
+.btn:focus{
+	color: mediumturquoise;
+	box-shadow: 0 0 10px lightskyblue;
+	border: 2px solid lightskyblue;
+  	width: calc(80% - 10px);
+	text-shadow: 0 0 3px mediumturquoise;
+	transition: 0.4s;
 }
