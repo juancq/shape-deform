@@ -15,7 +15,7 @@
     <script src="/js/ga_lib.js"></script>
     <script src="/js/TrackballControls.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-
+    
 </head>
 
 <body>
@@ -24,33 +24,27 @@
 
 <div id="sidebar">
   <ul>
-    <li style="font-size: 150%">Controls</li>
-    <li>
+    <li style="font-size: 150%; height: 20px;">Controls</li>
+    <li style="height: 55px;font-size:14px;">
         Equation:
         <input id="equationTextField" type="text" style="width:100px;color:#4283f4;">
-        <input type="button" onclick="applyEquation()" value="Apply"/>
+        <input type="button" class="submit" onclick="applyEquation()" value="Apply"/>
     </li>
-    <li><input type="button" onclick="getRandomEquation()" value="Get Random Equation"></li>
+    <li><input type="button" class="btn" onclick="getRandomEquation()" value="Get Random Equation"></li>
     <li style="height:50px;">
 			<!--form to upload model-->
 			<form enctype = "multipart/form-data" action="/uploadSingle" method='POST'>
 			<input type="file" name="file" style="padding-bottom: 10px;">
 			<br />
-			<input type="submit" value="submit">
+			<input type="submit" class="submit" value="submit">
 			</form>
 		</li>
   </ul>
 
 <p>
-<input type="button" onclick="location.href='/'" value="Multi Model View">
-</p>
+<input type="button" class="btn" onclick="treeEQ()" value="Tree Equation">
 <p>
-<input type="button" onclick="getRandomEquation()" value="Get Random Equation">
-</p>
-<p>
-<input type="button" onclick="treeEQ()" value="Tree Equation">
-<p>
-<input type="button" onclick="randTreeEQ()" value="Get Similar Tree Equation">
+<input type="button" class="btn" onclick="randTreeEQ()" value="Get Similar Tree Equation">
 </p>
 	
 <p>
@@ -64,7 +58,7 @@
 	{% else %}
 	<option value="none">No Models Found</option>
 	{% endif %}
-	<input type="submit" value="submit">
+	<input type="submit" style="margin: 9px" class="submit" value="submit">
 </select>
 </form>
 </p>

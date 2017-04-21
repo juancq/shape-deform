@@ -26,9 +26,9 @@
 
 <div id="sidebar">
 <!--top buttons-->
-<div style="background-color: black; padding: 3px 0px">
-<input type="button" onclick="sendShader()" value="Single Model with Selected Shader">
-
+<div style="padding: 10px 0px;border-bottom: 1px solid #111;background:#1C1E1F">
+<input type="button" class="btn" onclick="sendShader()" value="Single Model with Selected Shader" style="width: auto;">
+<br></br>
 <form action="/" method="POST">
 <select name = "selection">
 	{% if selectModel %}
@@ -39,22 +39,24 @@
 	{% else %}
 	<option value="none">No Models Found</option>
 	{% endif %}
-	<input type="submit" value="submit">
+	<input type="submit" class="submit" value="submit" style="margin: 9px">
 </select>
 </form>
-
+<br/>
 	
+
 </div>
 
+<br/>
 <!--invisible form to send selected shader to single_model-->
 <form style="display: none" action="/view_single" method="POST">
 <input type="text" id="shader" name="shader">
-<input type="submit" value="submit">
+<input type="submit" class="submit" value="submit">
 </form>
 	
 <form enctype = "multipart/form-data" action="/uploadMulti" method='POST'> <!--form to upload model-->
-<input type="file" name="file">
-<input type="submit" value="submit">
+<input type="file" name="file" style="padding-bottom: 10px;">
+<input type="submit" class="submit" value="submit">
 </form>
 
 </div>
