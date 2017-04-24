@@ -86,6 +86,11 @@ def viewSingle():
 
         return render_template("single_model.html")
 
+@app.route('/about', methods=['GET'])
+def about():
+
+    return render_template('about.html')
+
 #--------------------------------------#
 @app.route('/_start')
 def start():

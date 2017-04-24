@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+		<title>About</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/stylesheet.css') }}">
+    
+</head>
+
+<body style="background-image: url('http://www.hdwallpaperup.com/wp-content/uploads/2014/12/black-and-grey.jpg')">
+{% include 'navigation_bar.html' %}
+<div id="about">
+    <p>
+        This web application displays perturbed 3D models, the user selects the perturbation he/she likes the best, and the user feedback is used to generate new perturbations. 
+    </p>
+    <p>    
+        This process is repeated as many times as the user wants. We use genetic programming (GP) and evolutionary to create vertex shaders, with each shader encoding the perturbation for each model.
+    </p>
+</div>
+</body>
