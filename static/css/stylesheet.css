@@ -80,6 +80,19 @@ body {
 	overflow: auto;
 }
 
+#about {
+  background: rgba(250, 250, 250, 0.1);
+  width: 550px;
+  height: auto;
+  padding: 40px 50px;
+  font-family: Monospace;
+  font-size: 20px;
+  text-align: left;
+  text-indent: 50px;
+  color: #ccc;
+  margin: 150px auto;
+}
+
 
 
 /* Header */
