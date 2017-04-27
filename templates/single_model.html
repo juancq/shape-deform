@@ -46,7 +46,7 @@
 <p>
 <input type="button" class="btn" onclick="randTreeEQ()" value="Get Similar Tree Equation">
 </p>
-	
+
 <p>
 <form action="/single_model" method="POST">
 <select name = "selection">
@@ -57,6 +57,21 @@
 	{% endfor %}
 	{% else %}
 	<option value="none">No Models Found</option>
+	{% endif %}
+	<input type="submit" style="margin: 9px" class="submit" value="submit">
+</select>
+</form>
+</p>
+<p>
+<form action="/single_model" method="POST">
+<select name = "select_equation">
+	{% if selectEquation %}
+	<option value="none">Please select an equation</option>
+	{% for row in selectEquation %}
+	<option value='{{row["equation"]}}'>{{row["equation"]}}</option>
+	{% endfor %}
+	{% else %}
+	<option value="none">No equations Found</option>
 	{% endif %}
 	<input type="submit" style="margin: 9px" class="submit" value="submit">
 </select>
