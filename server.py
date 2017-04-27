@@ -39,23 +39,6 @@ def index():
 @app.route('/single_model', methods=['GET', 'POST'])
 def single():
 
-    selectEquation = getRow("equations")
-
-    if request.method == 'POST':
-        select_equation = request.form.get('select_equation')
-
-        if select_equation == "none":
-            return redirect(request.url)
-
-        equation = "/data/" + select_equation
-
-        return render_template("single_model.html", selectEquation=selectEquation, equation=equation)
-
-    else:
-
-        return render_template("single_model.html", selectEquation=selectEquation)
-
-
     selectModel = getRow("models")
 
     if request.method == 'POST':
