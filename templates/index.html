@@ -59,6 +59,9 @@
 <input type="submit" class="submit" value="submit">
 </form>
 
+<!-- Buttons to allow for NA mutations -->
+<input type="button" class="btn" onclick="startNA()" value="Start NA">
+<input type="button" class="btn" onclick="mutate()" value="NA Mutate">
 </div>
 
 
@@ -183,6 +186,37 @@ var controls = new function() {
 		
     };
 var gui = new dat.GUI();
+
+function startNA(){
+	
+	$.getJSON('/startNA',
+	{ size: SIZE },
+	function(data){
+		applyShaders(data);
+	});
+}
+	
+function mutate(){
+	
+	if(selectedIndex >= 0 && selectedIndex <= 8){
+	
+		alert(vexProgArray[selectedIndex]);
+	
+		$.getJSON('/naMutate', 
+		{selection : selectedIndex,
+		  size : SIZE},
+		function(data){
+		vexProgArray = []
+		applyShaders(data);
+
+		});
+		
+	} else {
+		
+		alert("Selection not made.");
+		}
+	
+}
 
 function sendShader(){
 	<!-- send shader to server-->
@@ -543,6 +577,7 @@ function startEvolution()
             size: SIZE,
         }, 
     function(data) {
+		vexProgArray = []
         applyShaders(data); 
     });
 }

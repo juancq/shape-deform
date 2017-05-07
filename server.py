@@ -4,12 +4,14 @@ import sqlite3
 import os
 from treelib import Tree
 from genetic_algorithm import Container
+from newGA import newGA
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect
 
 #--------------------------------------#
 app = Flask(__name__, static_url_path='')
 ga = Container()
+na = newGA()
 
 UPLOAD_FOLDER = 'data'
 ALLOWED_EXTENSIONS = set(['json'])
@@ -62,6 +64,33 @@ def treeEQ():
 
     return jsonify(result=equation)
 
+@app.route('/startNA')
+def startNA():
+
+    size = request.args.get('size', type=int)
+    na.start(size)
+
+    subset = ga.pre_process(na.population)
+
+    return jsonify(result=subset)
+
+@app.route('/naMutate')
+def naMutate():
+
+    selection = request.args.get('selection', type=int)
+    size = request.args.get('size', type=int)
+
+    mutated = []
+    subset = []
+
+    for i in range(size):
+        mutated.append(ga.pre_process(na.mutate(selection)))
+
+    for i in range(size):
+        subset.append(mutated[i][0])
+
+    return jsonify(result=subset)
+
 @app.route('/randTreeEQ')
 def randTreeEQ():
 
@@ -70,11 +99,10 @@ def randTreeEQ():
 
     return jsonify(result=equation)
 
-
-
 @app.route('/view_single', methods=["POST"])
 def viewSingle():
-    #examine deformed model in a single model page, selected from multi model page
+    #further examine a selected model from the multi model page
+
     if request.method == "POST":
 
         shader = request.form['shader']
@@ -95,37 +123,39 @@ def about():
 @app.route('/_start')
 def start():
 
-    size = request.args.get('size', 0, type=int)
+   size = request.args.get('size', 0, type=int)
 
-    # start ga
-    # ga.on_start(popsize = 50, subset_size = size)
-    #
-    # subset = ga.get_subset()
+   #start ga
+   ga.on_start(popsize = 9, subset_size = size)
 
-    subset = []
+   subset = ga.pre_process(ga.population)
 
-    for i in range(0, 9):
-        subset.append(generateEquation(generateTree()))
+   # subset = []
+   #
+   # for i in range(0, 9):
+   #     subset.append(generateEquation(generateTree()))
 
-    return jsonify(result=subset)
+   return jsonify(result=subset)
 
 #--------------------------------------#
 @app.route('/_step')
 def step():
+
     selection = request.args.get('sel', 0)
-    # ga.iga_step(selection)
-    # subset = ga.get_subset()
 
-    subset = []
+    ga.iga_step(selection)
+    subset = ga.get_subset()
 
-    if selection == 0:
-        #Model not altered or request was an error; revert all to default state
-        for i in range(0, 9):
-            subset.append("0.0")
-
-    else:
-        for i in range(0, 9):
-            subset.append(similarTreeEquations(selection))
+    # subset = []
+    #
+    # if selection == 0:
+    #     #If model not altered or request was an error; revert all to default state
+    #     for i in range(0, 9):
+    #         subset.append("0.0")
+    #
+    # else:
+    #     for i in range(0, 9):
+    #         subset.append(similarTreeEquations(selection))
 
     return jsonify(result=subset)
 
@@ -177,7 +207,6 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
 def uploadModel(file):
     #uploads model into the database
 
@@ -218,7 +247,6 @@ def uploadSingle():
 
 
     return render_template("single_model.html")
-
 
 @app.route('/uploadMulti', methods=['GET', 'POST'])
 def uploadMulti():
@@ -287,7 +315,7 @@ def randomValue():
     variables = ["x", "y", "z", "time"]
 
     if random.randint(0, 100) % 2 == 0:
-        num = random.randint(1, 1)
+        num = random.uniform(-1,1)
         if num == 0:
             return randomValue()
         return "(" + str(num) + ")"
@@ -299,7 +327,7 @@ def randomAll():
     variables = ["x", "y", "z", "+", "-", "/", "*", "sin", "cos", "tan"]
 
     if random.randint(0, 100) % 2 == 0:
-        num = random.randint(1, 1)
+        num = random.uniform(-1,1)
         if num == 0:
             return randomAll()
         return "(" + str(num) + ")"
