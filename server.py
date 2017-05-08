@@ -70,7 +70,7 @@ def startNA():
     size = request.args.get('size', type=int)
     na.start(size)
 
-    subset = ga.pre_process(na.population)
+    subset = na.get_expressions()
 
     return jsonify(result=subset)
 
@@ -80,14 +80,8 @@ def naMutate():
     selection = request.args.get('selection', type=int)
     size = request.args.get('size', type=int)
 
-    mutated = []
-    subset = []
-
-    for i in range(size):
-        mutated.append(ga.pre_process(na.mutate(selection)))
-
-    for i in range(size):
-        subset.append(mutated[i][0])
+    na.mutate(selection)
+    subset = na.get_expressions()
 
     return jsonify(result=subset)
 

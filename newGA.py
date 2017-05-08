@@ -4,6 +4,15 @@ import random
 import gplib
 from deap import base, creator, gp, tools
 
+def clean_expr(expr):
+    expr = expr.replace('add', '+')
+    expr = expr.replace('mul', '*')
+    expr = expr.replace('sub', '-')
+    expr = expr.replace('neg', '-')
+    expr = expr.replace('protectedDiv', '/')
+    expr = expr.replace('mod', '%')
+    return expr
+
 def protectedDiv(left, right):
     try:
         return left / right
@@ -34,7 +43,8 @@ creator.create("Individual", gplib.PrimitiveTree, fitness=creator.FitnessMin, ps
 toolbox = base.Toolbox()
 toolbox.register("expr", gplib.genHalfAndHalf, pset=pset, min_=1, max_=2)
 toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
-toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
+toolbox.register("mutUniform", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
+toolbox.register("nodeReplacement", gp.mutNodeReplacement, pset=pset)
 toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
@@ -50,5 +60,21 @@ class newGA:
 
     def mutate(self, selection):
 
-        return toolbox.mutate(self.population[selection])
+        selected = self.population[selection]
+        offspring = [toolbox.clone(selected) for _ in range(len(self.population))]
+
+        for i in range(1, len(offspring)):
+            # add more mutations here
+            if random.random() < 0.5:
+                offspring[i], = toolbox.mutUniform(offspring[i])
+            else:
+                offspring[i], = toolbox.nodeReplacement(offspring[i])
+
+        self.population = offspring
+
+        #return toolbox.mutate(self.population[selection])
+
+    def get_expressions(self):
+        exprs = [clean_expr(ind.js_str()) for ind in self.population]
+        return exprs
 
