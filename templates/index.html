@@ -59,9 +59,17 @@
 <input type="submit" class="submit" value="submit">
 </form>
 
+<p>
+<input type="button" class="btn" onclick="startIGA()" value="Start GA">
+<input type="button" class="btn" onclick="nextGeneration()" value="Step">
+</p>
+
+<p>&nbsp;</p>
+<p>
 <!-- Buttons to allow for NA mutations -->
 <input type="button" class="btn" onclick="startNA()" value="Start NA">
 <input type="button" class="btn" onclick="mutate()" value="NA Mutate">
+</p>
 </div>
 
 
@@ -167,6 +175,7 @@ var shaders = [];
 var vexProgArray = [];
 
 // for GUI
+/*
 var controls = new function() {
         this.status = 'Press start';
         //this.displayOutline = false;
@@ -186,6 +195,7 @@ var controls = new function() {
 		
     };
 var gui = new dat.GUI();
+*/
 
 function startNA(){
 	
@@ -400,12 +410,12 @@ function init()
     scene.add( directionalLight );
 
     // init GUI
-    gui.add(controls, 'status');
-    gui.add(controls, 'xo', 0.3, 1.0).step(.05);
-    gui.add(controls, 'mut', 0.0, 0.20).step(.05);
-    gui.add(controls, 'start');
-    gui.add(controls, 'submit');
-    gui.add(controls, 'save');
+    //gui.add(controls, 'status');
+    //gui.add(controls, 'xo', 0.3, 1.0).step(.05);
+    //gui.add(controls, 'mut', 0.0, 0.20).step(.05);
+    //gui.add(controls, 'start');
+    //gui.add(controls, 'submit');
+    //gui.add(controls, 'save');
 
 }
 
@@ -462,20 +472,21 @@ function onClick(event)
 
 }
 
-function next()
+function nextGeneration()
 {
     if (selectedIndex >= 0){
 	prevSel = selectedIndex;
 	selectedIndex = -2;
 
-	updateStatus('Processing...');
+	//updateStatus('Processing...');
 	
 	$.getJSON('/_step', {
-		sel: vexProgArray[prevSel],
+		sel: prevSel,
 	    }, 
 	function(data) {
 	    applyShaders(data);
-	    incGeneration();
+	    //incGeneration();
+	    generation++;
 	    clearSelection();
 	});
     }
@@ -492,9 +503,11 @@ function onDocumentKeyPress( event )
     switch(event.keyCode) 
     {
         // enter
+	/*
         case 13:
 	    next();
             break;
+	*/
         //u
         case 117:
             CAMERAMOVE *= 2.0;
@@ -527,11 +540,13 @@ function onDocumentKeyPress( event )
         // s
             deltaZ = -move;
             break;
+	/*
         // n
         case 110:
             change = 0;
             startEvolution();
             break;
+	*/
 
     }
 
@@ -568,10 +583,11 @@ function updateStatus(newStatus) {
     }
 }
 
-function startEvolution()
+function startIGA()
 {
     console.debug("evolution started");
-    incGeneration();
+    //incGeneration();
+    generation++;
 
     $.getJSON('/_start', {
             size: SIZE,
