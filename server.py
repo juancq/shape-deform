@@ -42,20 +42,32 @@ def index():
 def single():
 
     selectModel = getRow("models")
+    selectEquation = getRow("equations")
 
-    if request.method == 'POST':
+    if request.method == 'POST' and request.form.get('selecton'):
         selection = request.form.get('selection')
 
         if selection == "none":
             return redirect(request.url)
 
-        filename = "/data/" + selection
+        filename = "/data/" + str(selection)
 
         return render_template("single_model.html", selectModel=selectModel, filename=filename)
 
+    elif request.method == 'POST'and request.form.get('select_equation'):
+        select_equation = request.form.get('select_equation')
+        print(select_equation)
+
+        shader = select_equation
+
+        if select_equation == "none":
+            return redirect(request.url)
+
+        return render_template("single_model.html", selectEquation = selectEquation, shader = shader)
+
     else:
 
-        return render_template("single_model.html", selectModel=selectModel)
+        return render_template("single_model.html", selectModel=selectModel, selectEquation=selectEquation)
 
 @app.route('/treeEQ')
 def treeEQ():

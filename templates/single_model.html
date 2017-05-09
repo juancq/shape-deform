@@ -27,8 +27,13 @@
     <li style="font-size: 150%; height: 20px;">Controls</li>
     <li style="height: 55px;font-size:14px;">
         Equation:
+        <form>
         <input id="equationTextField" type="text" style="width:100px;color:#4283f4;">
+        <p>
         <input type="button" class="submit" onclick="applyEquation()" value="Apply"/>
+        <input type="button" class="submit" onclick="saveEquation()" value="Save"/>
+        </p>
+        </form>
     </li>
     <li><input type="button" class="btn" onclick="getRandomEquation()" value="Get Random Equation"></li>
     <li style="height:50px;">
@@ -46,7 +51,7 @@
 <p>
 <input type="button" class="btn" onclick="randTreeEQ()" value="Get Similar Tree Equation">
 </p>
-	
+
 <p>
 <form action="/single_model" method="POST">
 <select name = "selection">
@@ -62,6 +67,22 @@
 </select>
 </form>
 </p>
+
+<p>
+<form action="/single_model" method="POST">
+<select name = "select_equation">
+	{% if selectEquation %}
+	<option value="none">Please select an equation</option>
+	{% for row in selectEquation %}
+	<option value='{{row["equation"]}}'>{{row["equation"]}}</option>
+	{% endfor %}
+	{% else %}
+	<option value="none">No equations Found</option>
+	{% endif %}
+	<input type="submit" style="margin: 9px" class="submit" value="Apply">
+</select>
+</form>
+</p>	
 
 </div>
 
@@ -422,6 +443,9 @@ function randTreeEQ(){
 
   });
 }
+
+
+
 
 </script>
 </body>
