@@ -132,9 +132,9 @@ def start():
    size = request.args.get('size', 0, type=int)
 
    #start ga
-   ga.on_start(popsize = 9, subset_size = size)
+   ga.on_start(popsize = 50, subset_size = size)
 
-   subset = ga.pre_process(ga.population)
+   subset = ga.get_subset()
 
    # subset = []
    #
@@ -147,8 +147,7 @@ def start():
 @app.route('/_step')
 def step():
 
-    selection = request.args.get('sel', 0)
-
+    selection = request.args.get('sel', 0, type=int)
     ga.iga_step(selection)
     subset = ga.get_subset()
 

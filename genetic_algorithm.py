@@ -80,10 +80,11 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("compile", compile, pset=pset)
 
 #samples = [np.linspace(-10, 10, 1000) for i in range(3)]
-samples = [np.linspace(-20, 20, 10000), np.linspace(0, 100, 1000)]
+#samples = [np.linspace(-20, 20, 10000), np.linspace(0, 100, 1000)]
 
-vpoints = np.linspace(-10, 10, 1000)
-time_samples = np.linspace(0, 10, 20)
+#vpoints = np.linspace(-10, 10, 1000)
+#time_samples = np.linspace(0, 10, 20)
+points = [tuple(random.random() for _ in range(4)) for _ in range(100)]
 
 
 #--------------------------------------#
@@ -93,32 +94,48 @@ def evalEquation(individual, points, best_func):
     # Evaluate the mean squared error between the expression
     # and the real function : x**4 + x**3 + x**2 + x
     errors = 0.
-    try:
-        for x, time in zip(points[0], points[1]):
-            #print x, time
-            errors += (func(x, x, x, time) - best_func(x, x, x, time))**2
-    except:
-        print 'value error in function'
-        errors = 100000.
+    for x, time in zip(points[0], points[1]):
+        #print x, time
+        errors += (func(x, x, x, time) - best_func(x, x, x, time))**2
+    #try:
+    #    for x, time in zip(points[0], points[1]):
+    #        #print x, time
+    #        errors += (func(x, x, x, time) - best_func(x, x, x, time))**2
+    #except:
+    #    print 'value error in function'
+    #    errors = 100000.
 
     return errors / len(points),
 
 #--------------------------------------#
-def evalEquation_timeintervals(individual, points, time, best_func):
+##def evalEquation_timeintervals(individual, points, time, best_func):
+#    # Transform the tree expression in a callable function
+#    func = toolbox.compile(expr=individual)
+#    # Evaluate the mean squared error between the expression
+#    # and the real function : x**4 + x**3 + x**2 + x
+#    errors = 0.
+#    try:
+#        for t in time:
+#            error_arr = [(func(x, y, z, t) - best_func(x, y, z, t))**2 for (x, y, z, t) in points]
+#            errors += math.fsum(error_arr)
+#    except:
+#        print 'value error in function'
+#        errors = 1000000.
+#
+#    return errors / len(points),
+
+def evalEquation_timeintervals(individual, points, best_func):
     # Transform the tree expression in a callable function
     func = toolbox.compile(expr=individual)
     # Evaluate the mean squared error between the expression
     # and the real function : x**4 + x**3 + x**2 + x
-    errors = 0.
     try:
-        for t in time:
-            error_arr = [(func(x, x, x, t) - best_func(x, x, x, t))**2 for x in points]
-            errors += math.fsum(error_arr)
+        loss = sum([(func(x, y, z, t) - best_func(x, y, z, t))**2 for (x, y, z, t) in points])
     except:
         print 'value error in function'
-        errors = 100000.
+        loss = 1000000.
 
-    return errors / len(points),
+    return loss / len(points),
 
 #def evalSymbReg(individual, points):
 #    # Transform the tree expression in a callable function
@@ -129,8 +146,9 @@ def evalEquation_timeintervals(individual, points, time, best_func):
 #    return math.fsum(sqerrors) / len(points),
 
 #toolbox.register("evaluate", evalSymbReg, points=[x/10. for x in range(-10,10)])
-toolbox.register("evaluate", evalEquation, points=samples)
-toolbox.register("evaluate", evalEquation_timeintervals, points=vpoints, time=time_samples)
+#toolbox.register("evaluate", evalEquation, points=samples)
+#toolbox.register("evaluate", evalEquation_timeintervals, points=vpoints, time=time_samples)
+toolbox.register("evaluate", evalEquation_timeintervals, points=points)
 toolbox.register("select", tools.selTournament, tournsize=3)
 toolbox.register("mate", gp.cxOnePoint)
 toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
@@ -154,6 +172,7 @@ class Container:
 
         self.popsize = 100
         self.subset_size = 9
+        self.best = None
 
 #----------------------------#
     def on_start(self, popsize, subset_size):
@@ -201,6 +220,18 @@ class Container:
             # bestish selection
             sample = tools.selTournament(self.population, self.subset_size, 3)
 
+            if self.best:
+                sample[0] = self.best
+
+            # if not unique, sample one more time
+            sample_strings = [ind.__str__() for ind in sample]
+            if len(set(sample_strings)) < len(sample_strings):
+                for i, ind_i in enumerate(sample):
+                    for j, ind_j in enumerate(sample[i+1:]):
+                        if ind_i == ind_j:
+                            sample[i+1+j] = tools.selRandom(self.population, 1)[0]
+                            
+            print 'sample', sample
             self.subset = sample
             sample = self.pre_process(sample)
         else: 
@@ -243,12 +274,13 @@ class Container:
 
         self.gen += 1
 
-        best = self.subset[selection]
+        self.best = toolbox.clone(self.subset[selection])
 
-        self.evaluate(self.population, best)
+        self.evaluate(self.population, self.best)
 
         offspring = toolbox.select(self.population, len(self.population))
         offspring = algorithms.varAnd(offspring, toolbox, self.cxpb, self.mutpb)
-        self.evaluate(offspring, best)
-        self.population[:] = offspring
+        self.evaluate(offspring, self.best)
+        self.population[0] = self.best
+        self.population[1:] = offspring[1:]
 #----------------------------#
