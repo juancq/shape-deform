@@ -319,7 +319,7 @@ def randomValue():
 
     variables = ["x", "y", "z", "time"]
 
-    if random.randint(0, 100) % 2 == 0:
+    if random.random() < 0.5:
         num = random.uniform(-1,1)
         if num == 0:
             return randomValue()
@@ -331,7 +331,7 @@ def randomAll():
 
     variables = ["x", "y", "z", "+", "-", "/", "*", "sin", "cos", "tan"]
 
-    if random.randint(0, 100) % 2 == 0:
+    if random.random() < 0.5:
         num = random.uniform(-1,1)
         if num == 0:
             return randomAll()
@@ -440,15 +440,15 @@ def generateEquation(tree):
 
 def similarTreeEquations(equation):
 
-    if random.randint(0, 100) % 2 == 0:
+    if random.random() < 0.5:
 
         equation += random.choice(operators) + randomVariable()
 
-    elif random.randint(0,100) % 2 == 0:
+    elif random.random() < 0.5:
 
         equation += random.choice(operators) + random.choice(cOperators) + "(" + randomVariable() + ")"
 
-        if random.randint(0, 100) < 50:
+        if random.random() < 0.5:
             equation += random.choice(operators) + randomVariable()
 
     else:

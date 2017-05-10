@@ -45,6 +45,7 @@ toolbox.register("expr", gplib.genHalfAndHalf, pset=pset, min_=1, max_=2)
 toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
 toolbox.register("mutUniform", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 toolbox.register("nodeReplacement", gp.mutNodeReplacement, pset=pset)
+toolbox.register("mutEphemeral", gp.mutEphemeral, mode="one")
 toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
@@ -65,8 +66,16 @@ class newGA:
 
         for i in range(1, len(offspring)):
             # add more mutations here
+            if random.random() < 0.25:
+                offspring[i], = toolbox.mutUniform(offspring[i])
+
             if random.random() < 0.5:
                 offspring[i], = toolbox.mutUniform(offspring[i])
+                offspring[i], = toolbox.nodeReplacement(offspring[i])
+
+            if random.random() < 0.75:
+                offspring[i], = toolbox.mutEphemeral(offspring[i])
+                  offspring[i], = toolbox.nodeReplacement(offspring[i])
             else:
                 offspring[i], = toolbox.nodeReplacement(offspring[i])
 

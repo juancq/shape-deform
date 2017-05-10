@@ -210,15 +210,12 @@ function mutate(){
 	
 	if(selectedIndex >= 0 && selectedIndex <= 8){
 	
-		alert(vexProgArray[selectedIndex]);
-	
 		$.getJSON('/naMutate', 
 		{selection : selectedIndex,
 		  size : SIZE},
 		function(data){
 		vexProgArray = []
 		applyShaders(data);
-
 		});
 		
 	} else {
