@@ -69,13 +69,13 @@ class newGA:
             if random.random() < 0.25:
                 offspring[i], = toolbox.mutUniform(offspring[i])
 
-            if random.random() < 0.5:
+            elif random.random() < 0.5:
                 offspring[i], = toolbox.mutUniform(offspring[i])
                 offspring[i], = toolbox.nodeReplacement(offspring[i])
 
-            if random.random() < 0.75:
+            elif random.random() < 0.75:
                 offspring[i], = toolbox.mutEphemeral(offspring[i])
-                  offspring[i], = toolbox.nodeReplacement(offspring[i])
+                offspring[i], = toolbox.nodeReplacement(offspring[i])
             else:
                 offspring[i], = toolbox.nodeReplacement(offspring[i])
 
@@ -86,4 +86,3 @@ class newGA:
     def get_expressions(self):
         exprs = [clean_expr(ind.js_str()) for ind in self.population]
         return exprs
-

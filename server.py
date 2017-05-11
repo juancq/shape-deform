@@ -38,6 +38,11 @@ def index():
 
         return render_template('index.html', selectModel=selectModel)
 
+@app.route('/experiment_page')
+def experimental():
+
+    return render_template('experiment_page.html')
+
 @app.route('/single_model', methods=['GET', 'POST'])
 def single():
 
