@@ -196,6 +196,21 @@ def recordEquation():
 
     return equation
 
+@app.route('/saveEquation')
+def saveEquation():
+    #save input equation from equationTextField to database
+
+        saveEquation = request.args.get('equation')
+
+        with sqlite3.connect("database.db") as con:
+            cur = con.cursor()
+            cur.execute("INSERT IGNORE INTO equations (equation) values (?)", [saveEquation])
+            print("Equation saved: " + str(saveEquation))
+                
+        con.commit()
+        con.close()
+
+        return saveEquation
 
 @app.route('/sendRandomEquation')
 def returnRandomEQ():
