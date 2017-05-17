@@ -69,6 +69,10 @@
 <!-- Buttons to allow for NA mutations -->
 <input type="button" class="btn" onclick="startNA()" value="Start NA">
 <input type="button" class="btn" onclick="mutate()" value="NA Mutate">
+	
+<br><br>
+<input id="equationTextField" type="text" style="width:80%;color:#4283f4"
+  placeholder="Selected Model's Equation">
 </p>
 </div>
 
@@ -466,6 +470,7 @@ function onClick(event)
     document.getElementById("button_" + selectedIndex).className = "selected";
 
     console.log(shaders[selectedIndex]);
+    document.getElementById("equationTextField").value = vexProgArray[selectedIndex];
 
 }
 
