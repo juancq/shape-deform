@@ -288,6 +288,7 @@ function onObjectLoadSuccess(obj)
     });
 
     scene.add(model);
+    document.getElementById("equationTextField").value = result;
 }
 
 /**
@@ -392,6 +393,7 @@ function render()
 
 {% if shader %}
 var t = '{{shader}}';
+document.getElementById("equationTextField").value = '{{shader}}';
 textboxShader(t);
 {%endif %}
 
@@ -401,8 +403,6 @@ function getRandomEquation() {
   $.getJSON('/sendRandomEquation', function(data) {
 
     textboxShader(data.result);
-
-    document.getElementById("equationTextField").value = data.result;
 
     // controls.equation = data.result;
     // eqController.updateDisplay();
@@ -434,7 +434,6 @@ function treeEQ(){
 	$.getJSON('/treeEQ', function(data) {
 	
 	textboxShader(data.result);
-	document.getElementById("equationTextField").value = data.result;
 	
 	});
 	
@@ -454,7 +453,6 @@ function randTreeEQ(){
 	function(data) {
 
 		textboxShader(data.result);
-		document.getElementById("equationTextField").value = data.result;
 
   });
 }
