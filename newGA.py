@@ -66,14 +66,15 @@ class newGA:
 
         for i in range(1, len(offspring)):
             # add more mutations here
-            if random.random() < 0.25:
+            value = random.random()
+            if value < 0.25:
                 offspring[i], = toolbox.mutUniform(offspring[i])
 
-            elif random.random() < 0.5:
+            elif value < 0.5:
                 offspring[i], = toolbox.mutUniform(offspring[i])
                 offspring[i], = toolbox.nodeReplacement(offspring[i])
 
-            elif random.random() < 0.75:
+            elif value < 0.75:
                 offspring[i], = toolbox.mutEphemeral(offspring[i])
                 offspring[i], = toolbox.nodeReplacement(offspring[i])
             else:
