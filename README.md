@@ -1,6 +1,9 @@
 # Shape Perturbation
 A web-based application for creating perturbations of 3D models. Upload a 3D model, and interactively explore perturbations of the 3D model. 
 
+![Exploring perturbations](https://raw.githubusercontent.com/wiki/juancq/shape-deform/images/multiviewmode.gif)
+
+
 ## Installation
 
 ```bash
