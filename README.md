@@ -9,6 +9,11 @@ A web-based application for creating perturbations of 3D models. Upload a 3D mod
 ```bash
 $ git clone https://github.com/juancq/shape-deform.git
 ```
+Activate your virtualenv (if any)
+
+```bash
+$ pip install -r requirements.txt
+```
 
 ## Requirements
 
@@ -16,11 +21,7 @@ $ git clone https://github.com/juancq/shape-deform.git
 - Flask (http://flask.pocoo.org)
 - Numpy (http://www.numpy.org)
 
-```bash
-$ pip install numpy
-$ pip install deap
-$ pip install flask
-```
+See requirements.txt
 
 ## Usage
 
@@ -28,3 +29,5 @@ $ pip install flask
 $ cd shape-deform
 $ python server.py
 ```
+
+Open web browser to localhost:8000.
