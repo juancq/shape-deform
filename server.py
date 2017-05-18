@@ -74,6 +74,27 @@ def single():
 
         return render_template("single_model.html", selectModel=selectModel, selectEquation=selectEquation)
 
+#for experimental_page, to record positive/negative
+@app.route('/positive')
+def positive():
+    
+    equation = request.args.get('equation')
+    
+    file = open('positive.txt', 'a')
+    file.write(equation+"\n")
+    
+    return jsonify(data="Success: Positive Recorded")
+    
+@app.route('/negative')
+def negative():
+    
+    equation = request.args.get('equation')
+    
+    file = open('negative.txt', 'a')
+    file.write(equation+"\n")
+    
+    return jsonify(data="Success: Negative Recorded")
+    
 @app.route('/treeEQ')
 def treeEQ():
 

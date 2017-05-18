@@ -66,10 +66,13 @@
 
 <p>&nbsp;</p>
 <h3>Mutate a Model:</h3>
-<!-- Buttons to allow for NA mutations -->
 <input type="button" class="btn" onclick="nextGeneration()" value="System A"><br><br>
 <input type="button" class="btn" onclick="mutate()" value="System B">
 
+<p>&nbsp;</p>
+<h3>Indicate Model as</h3>
+<input type="button" class="btn" onclick="positive()" value="(+) Positive"><br><br>
+<input type="button" class="btn" onclick="negative()" value="(-) Negative">
 </div>
 
 
@@ -196,6 +199,22 @@ var controls = new function() {
     };
 var gui = new dat.GUI();
 */
+
+function positive(){
+  $.getJSON('/positive',
+	{ equation: vexProgArray[selectedIndex] },
+  function(data){
+    console.log(data);
+  });
+}
+
+function negative(){
+  $.getJSON('/negative',
+	{ equation: vexProgArray[selectedIndex] },
+  function(data){
+    console.log(data);
+  });
+}
 
 function startNA(){
 
