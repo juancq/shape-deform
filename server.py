@@ -231,6 +231,14 @@ def saveEquation():
         con.commit()
         con.close()
 
+        #save input equation to text file
+        file = open("Equation Records.txt", "a")
+        if (os.path.getsize("Equation Records.txt")>0): #check if text file is empty
+            file.write("\n" + saveEquation) #if text file is not empty, add equation to new line
+        else:
+            file.write(saveEquation)
+        file.close()
+
         return saveEquation
 
 @app.route('/sendRandomEquation')
