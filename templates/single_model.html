@@ -31,7 +31,7 @@
         <input id="equationTextField" type="text" style="width:100px;color:#4283f4;">
         <p>
         <input type="button" class="submit" onclick="applyEquation()" value="Apply"/>
-        <input type="button" class="submit" onclick="saveToDatabase()" value="Save"/>
+        <input type="button" class="submit" onclick="saveInputEquation()" value="Save"/>
         </p>
         </form>
     </li>
@@ -414,7 +414,7 @@ function applyEquation() {
   textboxShader(document.getElementById("equationTextField").value);
 }
 
-function saveToDatabase(){
+function saveInputEquation(){
     //save input equation from equationTextField to database
     
     if (document.getElementById("equationTextField").value == ""){
@@ -426,6 +426,7 @@ function saveToDatabase(){
     $.getJSON('/saveEquation', 
     { equation: saveEquation});
     alert("Equation saved!");
+    location.reload();
     
 }
 
