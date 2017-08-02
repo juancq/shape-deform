@@ -49,7 +49,7 @@ def single():
     selectModel = getRow("models")
     selectEquation = getRow("equations")
 
-    if request.method == 'POST' and request.form.get('selecton'):
+    if request.method == 'POST' and request.form.get('selection'):
         selection = request.form.get('selection')
 
         if selection == "none":
@@ -59,13 +59,14 @@ def single():
 
         return render_template("single_model.html", selectModel=selectModel, filename=filename)
 
-    elif request.method == 'POST'and request.form.get('select_equation'):
-        select_equation = request.form.get('select_equation')
-        print(select_equation)
+    elif request.method == 'POST'and (request.form.get('select_equation') or request.form['shader']):
 
-        shader = select_equation
+        if(request.form.get('select_equation')):
+            shader = request.form.get('select_equation')
+        elif(request.form['shader']):
+            shader = request.form['shader']
 
-        if select_equation == "none":
+        if shader == "none":
             return redirect(request.url)
 
         return render_template("single_model.html", selectEquation = selectEquation, shader = shader)
@@ -77,24 +78,24 @@ def single():
 #for experimental_page, to record positive/negative
 @app.route('/positive')
 def positive():
-    
+
     equation = request.args.get('equation')
-    
+
     file = open('positive.txt', 'a')
     file.write(equation+"\n")
-    
+
     return jsonify(data="Success: Positive Recorded")
-    
+
 @app.route('/negative')
 def negative():
-    
+
     equation = request.args.get('equation')
-    
+
     file = open('negative.txt', 'a')
     file.write(equation+"\n")
-    
+
     return jsonify(data="Success: Negative Recorded")
-    
+
 @app.route('/treeEQ')
 def treeEQ():
 
@@ -130,21 +131,6 @@ def randTreeEQ():
     equation = similarTreeEquations(equation)
 
     return jsonify(result=equation)
-
-@app.route('/view_single', methods=["POST"])
-def viewSingle():
-    #further examine a selected model from the multi model page
-
-    if request.method == "POST":
-
-        shader = request.form['shader']
-        print(shader)
-
-        return render_template("single_model.html", shader=shader)
-
-    else:
-
-        return render_template("single_model.html")
 
 @app.route('/about', methods=['GET'])
 def about():
@@ -227,7 +213,7 @@ def saveEquation():
             cur = con.cursor()
             cur.execute("INSERT INTO equations (equation) values (?)", [saveEquation])
             print("Equation saved: " + str(saveEquation))
-                
+
         con.commit()
         con.close()
 
