@@ -69,7 +69,7 @@ def single():
         if shader == "none":
             return redirect(request.url)
 
-        return render_template("single_model.html", selectEquation = selectEquation, shader = shader)
+        return render_template("single_model.html", selectEquation = selectEquation, shader = shader, selectModel=selectModel)
 
     else:
 
