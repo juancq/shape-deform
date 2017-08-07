@@ -20,7 +20,7 @@
 
 </head>
 
-<body> 
+<body>
 
 {% include 'navigation_bar.html' %}
 
@@ -43,17 +43,17 @@
 </select>
 </form>
 <br/>
-	
+
 
 </div>
 
 <br/>
 <!--invisible form to send selected shader to single_model-->
-<form style="display: none" action="/view_single" method="POST">
+<form style="display: none" action="/single_model" method="POST">
 <input type="text" id="shader" name="shader">
 <input type="submit" class="submit" value="submit">
 </form>
-	
+
 <form enctype = "multipart/form-data" action="/uploadMulti" method='POST'> <!--form to upload model-->
 <input type="file" name="file" style="padding-bottom: 10px;">
 <input type="submit" class="submit" value="submit">
@@ -71,7 +71,7 @@
 <input type="button" class="btn" onclick="startNA()" value="Start NA">
 <p>
 <input type="button" class="btn" onclick="mutate()" value="NA Mutate">
-	
+
 <br><br>
 <input id="equationTextField" type="text" style="width:80%;color:#4283f4"
   placeholder="Selected Model's Equation">
@@ -96,7 +96,7 @@
 </script>
 
 <script type="x-shader/x-vertex" id="vertexShaderFooter">
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0); 
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
     }
 </script>
 
@@ -194,41 +194,41 @@ var controls = new function() {
         this.submit = function() {
             next();
         }
-		
+
 	this.save = function() {
 	    sendToDatabase();
 	}
-		
+
     };
 var gui = new dat.GUI();
 */
 
 function startNA(){
-	
+
 	$.getJSON('/startNA',
 	{ size: SIZE },
 	function(data){
 		applyShaders(data);
 	});
 }
-	
+
 function mutate(){
-	
+
 	if(selectedIndex >= 0 && selectedIndex <= 8){
-	
-		$.getJSON('/naMutate', 
+
+		$.getJSON('/naMutate',
 		{selection : selectedIndex,
 		  size : SIZE},
 		function(data){
 		vexProgArray = []
 		applyShaders(data);
 		});
-		
+
 	} else {
-		
+
 		alert("Selection not made.");
 		}
-	
+
 }
 
 function sendShader(){
@@ -239,21 +239,21 @@ function sendShader(){
 
 function sendToDatabase(){
 	<!-- send equation to server-->
-	
+
 	if(selectedIndex >= 0 && selectedIndex <= 8){
-		$.getJSON('/recordEquation', 
+		$.getJSON('/recordEquation',
 		{ equation : vexProgArray[selectedIndex] });
-	
+
 		alert("Saved!");
-		
+
 	} else {
-		
+
 		alert("Selection not made.");
 		}
-	
+
 }
 
-function defineViewports() 
+function defineViewports()
 {
     // create JSON objects with all parameters for the viewports
     var rowStep = 1.0 / ROWS;
@@ -265,7 +265,7 @@ function defineViewports()
 
     for (var i = 0; i < ROWS; i++)
     {
-        for (var j = 0; j < COLS; j++) 
+        for (var j = 0; j < COLS; j++)
         {
             var viewport = {
                 left: colStep * j,
@@ -291,15 +291,15 @@ function defineViewports()
     }
 }
 
-function initCameras() 
+function initCameras()
 {
-    // one camera for each viewport 
+    // one camera for each viewport
 
     windowWidth = container.offsetWidth;
     windowHeight = container.offsetHeight;
 
     var view;
-    for (var i =  0; i < views.length; ++i ) 
+    for (var i =  0; i < views.length; ++i )
     {
         view = views[i];
 
@@ -346,7 +346,7 @@ animate();
 alert('{{alert}}');
 {% endif %}
 
-function init() 
+function init()
 {
 
     container = document.getElementById( 'canvas' );
@@ -367,7 +367,7 @@ function init()
     {% else %}
     var modelName = "/data/male_model_object.json";
     {% endif %}
-	
+
     for (var i = 0; i < views.length; ++i)
     {
 	var objectLoader = new THREE.ObjectLoader();
@@ -407,7 +407,7 @@ function init()
     var directionalLight = new THREE.DirectionalLight( 0xffeedd );
     directionalLight.position.set( 1, 1, 1 ).normalize();
     scene.add( directionalLight );
-    
+
     var directionalLight = new THREE.DirectionalLight( 0xffeedd );
     directionalLight.position.set( -1, -1, -1 ).normalize();
     scene.add( directionalLight );
@@ -443,7 +443,7 @@ function onLoad(obj)
     scene.add(obj);
 }
 
-function onClick(event) 
+function onClick(event)
 {
     if (selectedIndex == -2) {
             return;
@@ -483,10 +483,10 @@ function nextGeneration()
 	selectedIndex = -2;
 
 	//updateStatus('Processing...');
-	
+
 	$.getJSON('/_step', {
 		sel: prevSel,
-	    }, 
+	    },
 	function(data) {
 	    applyShaders(data);
 	    //incGeneration();
@@ -494,17 +494,17 @@ function nextGeneration()
 	    clearSelection();
 	});
     }
-	
+
 }
 
 
-function onDocumentKeyPress( event ) 
+function onDocumentKeyPress( event )
 {
     var deltaX = 0, deltaY = 0, deltaZ = 0;
     var move = CAMERAMOVE;
     var change = 1;
 
-    switch(event.keyCode) 
+    switch(event.keyCode)
     {
         // enter
 	/*
@@ -555,10 +555,10 @@ function onDocumentKeyPress( event )
     }
 
 /*
-    if (change == 1) 
+    if (change == 1)
     {
         var delta = [deltaX, deltaY, deltaZ];
-        for ( var i = 0; i < views.length; ++i ) 
+        for ( var i = 0; i < views.length; ++i )
         {
             updateCamera(views[i].camera, scene, delta );
         }
@@ -595,10 +595,10 @@ function startIGA()
 
     $.getJSON('/_start', {
             size: SIZE,
-        }, 
+        },
     function(data) {
 		vexProgArray = []
-        applyShaders(data); 
+        applyShaders(data);
     });
 }
 
@@ -608,7 +608,7 @@ function updateCamera( camera, scene, delta ) {
     camera.position.z += delta[2];
 }
 
-function onDocumentMouseMove( event ) 
+function onDocumentMouseMove( event )
 {
     mouse.x = ( event.clientX - windowWidth / 2 );
     mouse.y = ( event.clientY - windowHeight / 2 );
@@ -636,7 +636,7 @@ function applyShaders(data)
         scene.remove(objects[i]);
         var m = new THREE.ShaderMaterial({
             uniforms: {
-                time: {type: "f", value: 0.0}, 
+                time: {type: "f", value: 0.0},
                 },
             vertexShader: vexProg,
             fragmentShader: document.getElementById('fragmentShader').textContent
@@ -651,14 +651,14 @@ function applyShaders(data)
 
         scene.add(objects[i]);
         //console.debug(result[i]);
-    }       
+    }
 }
 
-function updateSize() 
+function updateSize()
 {
 
-    if ( windowWidth != container.offsetWidth || windowHeight != container.offsetHeight ) 
-    
+    if ( windowWidth != container.offsetWidth || windowHeight != container.offsetHeight )
+
     {
 	windowWidth = container.offsetWidth;
 	windowHeight = container.offsetHeight;
@@ -666,7 +666,7 @@ function updateSize()
     }
 }
 
-function animate() 
+function animate()
 {
     render();
     stats.update();
@@ -674,13 +674,13 @@ function animate()
     requestAnimationFrame( animate );
 }
 
-function render() 
+function render()
 {
     updateSize();
 
     var delta = clock.getDelta();
 
-    for ( var i = 0; i < views.length; ++i ) 
+    for ( var i = 0; i < views.length; ++i )
     {
         var left   = Math.floor( windowWidth  * views[i].left );
         var bottom = Math.floor( windowHeight * views[i].bottom );
