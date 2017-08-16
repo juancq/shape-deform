@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js">
+        </script>
+
+		<title>Shape Perturbation</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/stylesheet.css') }}">
+
+
+<script src="/js/dat.gui.js"></script>
+<script src="/js/three.min.js"></script>
+<script src="/js/stats.min.js"></script>
+<script src="/js/ga_lib.js"></script>
+<script src="/js/FlyControls.js"></script>
+<script src="/js/TrackballControls.js"></script>
+
+</head>
+
+<body>
+
+{% include 'navigation_bar.html' %}
+
+<div id="sidebar">
+<!--top buttons-->
+<div style="padding: 10px 0px;border-bottom: 1px solid #111;background:#1C1E1F">
+<input type="button" class="btn" onclick="sendShader()" value="Single Model with Selected Shader" style="width: auto;">
+<br></br>
+<form action="/" method="POST">
+<select name = "selection">
+	{% if selectModel %}
+	<option value="none">Please select a model</option>
+	{% for row in selectModel %}
+	<option value='{{row["modelName"]}}'>{{row["modelName"]}}</option>
+	{% endfor %}
+	{% else %}
+	<option value="none">No Models Found</option>
+	{% endif %}
+	<input type="submit" class="submit" value="submit" style="margin: 9px">
+</select>
+</form>
+<br/>
+</div>
+
+<br/>
+<!--invisible form to send selected shader to single_model-->
+<form style="display: none" action="/single_model" method="POST">
+<input type="text" id="shader" name="shader">
+<input type="submit" class="submit" value="submit">
+</form>
+
+<form enctype = "multipart/form-data" action="/uploadMulti" method='POST'> <!--form to upload model-->
+<input type="file" name="file" style="padding-bottom: 10px;">
+<input type="submit" class="submit" value="submit">
+</form>
+<br></br>
+<p>
+<input type="button" class="btn" onclick="startIGA()" value="Start GA">
+<p>
+<input type="button" class="btn" onclick="nextGeneration()" value="Step">
+</p>
+
+<p>&nbsp;</p>
+<p>
+<!-- Buttons to allow for NA mutations -->
+<input type="button" class="btn" onclick="startNA()" value="Start NA">
+<p>
+<input type="button" class="btn" onclick="mutate()" value="NA Mutate">
+
+<br><br>
+<input id="equationTextField" type="text" style="width:80%;color:#4283f4"
+  placeholder="Selected Model's Equation">
+</p>
+
+<div>
+  <input type="button" style="display: inline-block" class="btn" onclick="backPage()" value="Back">
+  <input type="button" style="display: inline-block" class="btn" onclick="nextPage()" value="Next">
+  <p id="pageLocation"></p>
+</div>
+
+</div>
+
+
+<div id="canvas">
+    <div id="buttons"></div>
+</div>
+
+
+
+<script type="x-shader/x-vertex" id="vertexShaderHeader">
+    uniform float time;
+    varying vec3 vNormal;
+
+    void main() {
+        vNormal = normal;
+
+        vec3 newPos = vec3(position);
+</script>
+
+<script type="x-shader/x-vertex" id="vertexShaderFooter">
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
+    }
+</script>
+
+<script type="x-shader/x-vertex" id="vertexShader">
+/*
+
+glsl functions
+max, min, mod, fract, ceil, floor, sign, abs, inversesqrt, sqrt,
+log2, exp2, log, exp, pow, atan, acos, asin, tan, cos, sin,
+degrees, radians
+
+vectors: distance, dot, cross, length, normalize
+
+*/
+    // vertex shader code
+    uniform float time;
+    varying vec3 vNormal;
+
+    void main() {
+        vNormal = normal;
+        vec3 newPos = vec3(position);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
+    }
+
+
+</script>
+
+<script type="x-shader/x-vertex" id="fragmentShader">
+    // fragment shader code
+
+    varying vec3 vNormal;
+
+    void main() {
+        // set texture to color
+        //gl_FragColor = vec4(1.0, 0.5, 1.0, 1.0);
+
+        vec3 light = vec3(0.5, 0.2, 1.0);
+        light = normalize(light);
+        float dProd = max(0.0, dot(vNormal, light));
+
+        gl_FragColor = vec4(dProd, dProd, dProd, 1.0);
+
+    }
+
+</script>
+
+
+<script>
+
+//-----------------------
+
+var container, stats;
+
+var scene, renderer;
+var start = Date.now();
+var fov = 30;
+
+var objects = [];
+var mats = [];
+
+var mouse = new THREE.Vector2();
+var selectedBox;
+var selectedIndex = -1;
+var prevSel = -1;
+
+var CAMERAMOVE = 4.0;
+var windowWidth;
+var windowHeight;
+var views = [];
+var ROWS = 3;
+var COLS = 3;
+var PAGE = 0;
+var MAXPAGE = 9;
+var SIZE = ROWS * COLS;
+var xoRate = 0.7, mutRate = 0.01;
+
+var flyingCameras = [];
+
+var clock = new THREE.Clock();
+
+var generation = 1;
+
+var shaders = [];
+var vexProgArray = [];
+var shadersResult = [];
+
+// var scroll = document.getElementById("canvas");
+// var content = $(scroll).height();
+// $(scroll).scroll(function() {
+//    if($(scroll).scrollTop() + $(scroll).height() == $(scroll).height()+20)  {
+//        //safe to do stuff here!
+//        document.getElementById("canvas").innerHTML = "";
+//        document.getElementById("buttons").innerHTML = "";
+//        $(scroll).scrollTop(15);
+//    }
+// });
+
+// for GUI
+/*
+var controls = new function() {
+        this.status = 'Press start';
+        //this.displayOutline = false;
+        this.xo = xoRate;
+        this.mut = mutRate;
+        this.start = function() {
+            startEvolution();
+        }
+	// next
+        this.submit = function() {
+            next();
+        }
+
+	this.save = function() {
+	    sendToDatabase();
+	}
+
+    };
+var gui = new dat.GUI();
+*/
+
+function startNA(){
+
+	$.getJSON('/startNA',
+	{ size: SIZE * MAXPAGE },
+	function(data){
+    PAGE = 0;
+		applyShaders(data);
+	});
+}
+
+function mutate(){
+
+	if(selectedIndex >= 0 && selectedIndex <= 8){
+    PAGE = 0;
+		$.getJSON('/naMutate',
+		{selection : selectedIndex,
+		  size : SIZE * MAXPAGE},
+		function(data){
+      PAGE = 0;
+		  applyShaders(data);
+		});
+
+	} else {
+
+		alert("Selection not made.");
+		}
+
+}
+
+function nextPage(){
+  if(PAGE == 9){
+    return alert("This is the last page!");
+  } else {
+    PAGE = PAGE + 1;
+    applyShaders(shadersResult);
+  }
+}
+
+function backPage(){
+  if(PAGE == 0){
+    return alert("This is the first page!");
+  } else {
+    PAGE = PAGE - 1;
+    applyShaders(shadersResult);
+  }
+}
+
+function showPage(){
+  document.getElementById('pageLocation').innerHTML = "Page "+(PAGE+1)+" out of "+(MAXPAGE+1);
+}
+
+function sendShader(){
+	<!-- send shader to server-->
+	document.getElementById("shader").value = vexProgArray[selectedIndex];
+	document.forms[1].submit();
+}
+
+function sendToDatabase(){
+	<!-- send equation to server-->
+
+	if(selectedIndex >= 0 && selectedIndex <= 8){
+		$.getJSON('/recordEquation',
+		{ equation : vexProgArray[selectedIndex] });
+
+		alert("Saved!");
+
+	} else {
+
+		alert("Selection not made.");
+		}
+
+}
+
+function defineViewports()
+{
+    // create JSON objects with all parameters for the viewports
+    var rowStep = 1.0 / ROWS;
+    var colStep = 1.0 / COLS;
+    var spacing = 500;
+    var cameraDist = 20;
+
+    var index = 0;
+
+    for (var i = 0; i < ROWS; i++)
+    {
+        for (var j = 0; j < COLS; j++)
+        {
+            var viewport = {
+                left: colStep * j,
+                bottom: rowStep * i,
+                width: colStep,
+                height: rowStep,
+                background: new THREE.Color().setRGB( 0, 0, 0),
+                eye: [j * spacing, i * spacing, cameraDist ],
+                up: [ 0, 1, 0 ],
+                fov: 75,
+                };
+
+            views.push(viewport);
+
+            var bPos = Math.floor(rowStep * i * 100 + rowStep * 100 * 0.5);
+            var lPos = Math.floor(colStep * j * 100);
+            var b = "<button id=\"button_" + index + "\" type=\"button\" style=\"position:absolute;";
+            b += "bottom:" + bPos + "%; left:" + lPos + "%;\">Select</button>";
+            document.getElementById("buttons").innerHTML += b;
+            index++;
+
+        }
+    }
+}
+
+function initCameras()
+{
+    // one camera for each viewport
+
+    windowWidth = container.offsetWidth;
+    windowHeight = container.offsetHeight;
+
+    var view;
+    for (var i =  0; i < views.length; ++i )
+    {
+        view = views[i];
+
+        camera = new THREE.PerspectiveCamera( view.fov, windowWidth / windowHeight, 0.1, 1000 );
+        camera.position.x = view.eye[ 0 ];
+        camera.position.y = view.eye[ 1 ]+10;
+        camera.position.z = view.eye[ 2 ];
+        camera.up.x = view.up[ 0 ];
+        camera.up.y = view.up[ 1 ];
+        camera.up.z = view.up[ 2 ];
+        camera.lookAt(new THREE.Vector3(view.eye[0], view.eye[1]+20, 0));
+        // save camera in current view
+        view.camera = camera;
+
+        //var controls = new THREE.FlyControls(camera);
+        //controls.movementSpeed = 25;
+        //controls.domElement = container;
+        //controls.rollSpeed = Math.PI / 24;
+        //controls.autoForward = false;
+        //controls.dragToLook = true;
+
+        //var flyControls = new THREE.FirstPersonControls(camera);
+        //flyControls.movementSpeed = 25;
+        //flyControls.rollSpeed = Math.PI / 24;
+        //flyControls.autoForward = true;
+        //flyControls.dragToLook = false;
+
+        //flyingCameras.push(controls);
+
+        var cam_i = new THREE.TrackballControls(camera, renderer.domElement);
+        cam_i.target = new THREE.Vector3(view.eye[0], view.eye[1]+20, 0);
+        flyingCameras.push(cam_i);
+
+    }
+
+
+}
+
+
+init();
+animate();
+showPage(); 
+
+{% if alert %}
+alert('{{alert}}');
+{% endif %}
+
+function init()
+{
+
+    container = document.getElementById( 'canvas' );
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    //windowWidth = document.getElementById('canvas').offsetWidth;
+    //windowHeight = document.getElementById('canvas').offsetHeight;
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    container.appendChild( renderer.domElement );
+
+    scene = new THREE.Scene();
+
+    defineViewports();
+    initCameras();
+
+    // load models
+    {% if filename %}
+    var modelName = '{{filename}}';
+    {% else %}
+    var modelName = "/data/male_model_object.json";
+    {% endif %}
+
+    for (var i = 0; i < views.length; ++i)
+    {
+	var objectLoader = new THREE.ObjectLoader();
+	objectLoader.load(modelName, onLoad);
+    }
+
+    // define materials for each object
+    for (var i = 0; i < views.length; ++i)
+    {
+        // shader material
+        var m = new THREE.ShaderMaterial({
+            uniforms: {
+                time: {type: "f", value: 0.0},
+            },
+            vertexShader: document.getElementById('vertexShader').textContent,
+            fragmentShader: document.getElementById('fragmentShader').textContent
+        });
+
+        mats.push(m);
+
+    }
+
+    stats = new Stats();
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.top = '0px';
+    container.appendChild( stats.domElement );
+
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    document.addEventListener('keypress', onDocumentKeyPress, false);
+    //document.addEventListener('click', onClick, false);
+    document.getElementById('buttons').addEventListener('click', onClick, false);
+
+    // lighting
+    var ambient = new THREE.AmbientLight( 0x444444 );
+    scene.add( ambient );
+
+    var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+    directionalLight.position.set( 1, 1, 1 ).normalize();
+    scene.add( directionalLight );
+
+    var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+    directionalLight.position.set( -1, -1, -1 ).normalize();
+    scene.add( directionalLight );
+
+    // init GUI
+    //gui.add(controls, 'status');
+    //gui.add(controls, 'xo', 0.3, 1.0).step(.05);
+    //gui.add(controls, 'mut', 0.0, 0.20).step(.05);
+    //gui.add(controls, 'start');
+    //gui.add(controls, 'submit');
+    //gui.add(controls, 'save');
+
+}
+
+function onLoad(obj)
+{
+    var index = objects.length;
+
+    objects.push(obj);
+    obj.position.set(views[index].eye[0], views[index].eye[1], 0);
+    obj.scale.x = 1;
+    obj.scale.y = 1;
+    obj.scale.z = 1;
+    obj.name = 'child'+index;
+
+    obj.traverse( function ( child )
+    {
+        if ( child instanceof THREE.Mesh ) {
+            child.material = mats[index];
+        }
+    });
+
+    scene.add(obj);
+}
+
+function onClick(event)
+{
+    if (selectedIndex == -2) {
+            return;
+    }
+
+    if (selectedIndex > -1) {
+        scene.remove(selectedBox);
+        document.getElementById("button_" + selectedIndex).className = "unselected";
+    }
+
+    var width = document.getElementById('canvas').offsetWidth;
+    var height = document.getElementById('canvas').offsetHeight;
+
+    console.log('width and height: ' + width + ' ' + height);
+    mouse.x = ( event.clientX / width ) * 2 - 1;
+    mouse.y = -( event.clientY / height ) * 2 + 1;
+
+    var curCol = Math.floor(event.clientX / (width / COLS));
+    var curRow = Math.floor(event.clientY / (height / ROWS));
+
+    curRow = ROWS - curRow - 1;
+    selectedIndex = (curRow * COLS) + curCol;
+    selectedBox = new THREE.BoxHelper(objects[selectedIndex]);
+    scene.add(selectedBox);
+
+    document.getElementById("button_" + selectedIndex).className = "selected";
+
+    console.log(shaders[selectedIndex]);
+    document.getElementById("equationTextField").value = vexProgArray[selectedIndex];
+
+}
+
+function nextGeneration()
+{
+    if (selectedIndex >= 0){
+	prevSel = selectedIndex;
+	selectedIndex = -2;
+  PAGE = 0;
+	//updateStatus('Processing...');
+  
+	$.getJSON('/_step', {
+		sel: prevSel,
+	    },
+	function(data) {
+      PAGE = 0;
+	    applyShaders(data);
+	    //incGeneration();
+	    generation++;
+	});
+    }
+
+}
+
+
+function onDocumentKeyPress( event )
+{
+    var deltaX = 0, deltaY = 0, deltaZ = 0;
+    var move = CAMERAMOVE;
+    var change = 1;
+
+    switch(event.keyCode)
+    {
+        // enter
+	/*
+        case 13:
+	    next();
+            break;
+	*/
+        //u
+        case 117:
+            CAMERAMOVE *= 2.0;
+            break;
+        // y
+        case 121:
+            CAMERAMOVE /= 2.0;
+            break;
+        // h
+        case 72+32:
+            deltaX = -move;
+            break;
+        // l
+        case 76+32:
+            deltaX = move;
+            break;
+        // j
+        case 74+32:
+            deltaY = move;
+            break;
+        // k
+        case 75+32:
+            deltaY = -move;
+            break;
+        case 87+32:
+        // w
+            deltaZ = move;
+            break;
+        case 83+32:
+        // s
+            deltaZ = -move;
+            break;
+	/*
+        // n
+        case 110:
+            change = 0;
+            startEvolution();
+            break;
+	*/
+
+    }
+
+/*
+    if (change == 1)
+    {
+        var delta = [deltaX, deltaY, deltaZ];
+        for ( var i = 0; i < views.length; ++i )
+        {
+            updateCamera(views[i].camera, scene, delta );
+        }
+    }
+    */
+}
+
+function clearSelection()
+{
+    document.getElementById("button_" + prevSel).className = "unselected";
+    selectedIndex = -1;
+    scene.remove(selectedBox);
+    selectedBox = null;
+}
+
+function incGeneration()
+{
+    updateStatus("Generation: " + generation);
+    generation++;
+}
+
+function updateStatus(newStatus) {
+    controls.status = newStatus;
+    for (var i in gui.__controllers) {
+        gui.__controllers[i].updateDisplay();
+    }
+}
+
+function startIGA()
+{
+    console.debug("evolution started");
+    //incGeneration();
+    generation++;
+
+    $.getJSON('/_start', {
+            size: SIZE * MAXPAGE,
+        },
+    function(data) {
+        shadersResult = [];
+        shadersResult = data;
+        PAGE = 0;
+        applyShaders(data);
+    });
+}
+
+function updateCamera( camera, scene, delta ) {
+    camera.position.x += delta[0];
+    camera.position.y += delta[1];
+    camera.position.z += delta[2];
+}
+
+function onDocumentMouseMove( event )
+{
+    mouse.x = ( event.clientX - windowWidth / 2 );
+    mouse.y = ( event.clientY - windowHeight / 2 );
+}
+
+function applyShaders(data)
+{
+
+    var header = document.getElementById('vertexShaderHeader').textContent;
+    var footer = document.getElementById('vertexShaderFooter').textContent;
+
+    var result = data.result.slice(SIZE*PAGE, (SIZE*PAGE)+(SIZE+1));
+    
+    vexProgArray = []
+    shaders = [];
+    
+    for (var i = 0; i < objects.length; i++)
+    {
+        vexProgArray.push(result[i]);
+
+        var vexProg = result[i].replace(/x/g, 'newPos.x');
+        vexProg = vexProg.replace(/y/g, 'newPos.y');
+        vexProg = vexProg.replace(/z/g, 'newPos.z');
+
+        console.debug(vexProg);
+        vexProg = header + 'newPos.xyz += ' + vexProg + ';\n' + footer;
+        shaders.push(vexProg);
+        scene.remove(objects[i]);
+        var m = new THREE.ShaderMaterial({
+            uniforms: {
+                time: {type: "f", value: 0.0},
+                },
+            vertexShader: vexProg,
+            fragmentShader: document.getElementById('fragmentShader').textContent
+        });
+
+        mats[i] = m;
+        objects[i].traverse( function ( child ) {
+            if ( child instanceof THREE.Mesh ) {
+                child.material = mats[i];
+            }
+        });
+
+        scene.add(objects[i]);
+        
+        
+        //console.debug(result[i]);
+    }
+    showPage();
+    clearSelection();
+}
+
+function updateSize()
+{
+
+    if ( windowWidth != container.offsetWidth || windowHeight != container.offsetHeight )
+
+    {
+	windowWidth = container.offsetWidth;
+	windowHeight = container.offsetHeight;
+        renderer.setSize ( windowWidth, windowHeight );
+    }
+}
+
+function animate()
+{
+    render();
+    stats.update();
+
+    requestAnimationFrame( animate );
+}
+
+function render()
+{
+    updateSize();
+
+    var delta = clock.getDelta();
+
+    for ( var i = 0; i < views.length; ++i )
+    {
+        var left   = Math.floor( windowWidth  * views[i].left );
+        var bottom = Math.floor( windowHeight * views[i].bottom );
+        var width  = Math.floor( windowWidth  * views[i].width );
+        var height = Math.floor( windowHeight * views[i].height );
+        renderer.setViewport( left, bottom, width, height );
+        renderer.setScissor( left, bottom, width, height );
+        renderer.setScissorTest ( true );
+        renderer.setClearColor( views[i].background );
+
+        views[i].camera.aspect = width / height;
+        views[i].camera.updateProjectionMatrix();
+
+        //mats[i].uniforms['time'].value = .00025 * (Date.now() - start);
+        mats[i].uniforms['time'].value = .00050 * (Date.now() - start);
+
+        //flyingCameras[i].update(delta);
+        flyingCameras[i].update();
+
+        renderer.render( scene, views[i].camera );
+    }
+}
+
+</script>
+
+</body>
+</html>
